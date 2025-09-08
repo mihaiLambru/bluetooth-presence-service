@@ -2,9 +2,10 @@
 name = "bt-scan"
 version = "0.1.0"
 description = "Simple Bluetooth scanner for Home Assistant"
-authors = [{ name = "Mihai", email = "you@example.com" }]
+authors = [{ name = "Mihai", email = "mihailambru99@gmail.com" }]
 dependencies = [
-    "bleak>=0.22.0"
+    "bleak>=0.22.0",
+		"paho-mqtt"
 ]
 
 [project.scripts]
