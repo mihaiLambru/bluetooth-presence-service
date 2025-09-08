@@ -1,6 +1,7 @@
 import enum, json
 from typing import TypedDict
 from bleak.backends.device import BLEDevice
+from mqtt.config import mqttc
 
 class SentEvent(enum.Enum): 
 	DEVICE_UPDATE = "device_update"

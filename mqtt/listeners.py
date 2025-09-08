@@ -1,5 +1,7 @@
 from enum import Enum
 from typing import TypedDict
+from mqtt.config import mqttc
+from scan import scan_devices
 
 class ReceivedEvent(Enum):
 	SCAN_REQUEST = "scan_request"
