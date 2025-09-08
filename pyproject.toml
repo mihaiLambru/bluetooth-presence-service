@@ -1,0 +1,11 @@
+[project]
+name = "bt-scan"
+version = "0.1.0"
+description = "Simple Bluetooth scanner for Home Assistant"
+authors = [{ name = "Mihai", email = "you@example.com" }]
+dependencies = [
+    "bleak>=0.22.0"
+]
+
+[project.scripts]
+bt-scan = "bt_scan.main:run"

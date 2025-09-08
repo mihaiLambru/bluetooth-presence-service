@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: bt-scan
+Version: 0.1.0
+Summary: Simple Bluetooth scanner for Home Assistant
+Author-email: Mihai <you@example.com>
+Requires-Dist: bleak>=0.22.0

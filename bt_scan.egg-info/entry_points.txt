@@ -1,0 +1,2 @@
+[console_scripts]
+bt-scan = bt_scan.main:run
