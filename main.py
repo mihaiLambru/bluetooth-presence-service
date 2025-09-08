@@ -1,7 +1,8 @@
 import asyncio, json, time
 from bleak import BleakClient, BleakScanner
-from mqtt.listeners import initListeners
+from mqtt.listeners import deinitListeners, initListeners
 from mqtt.sendEvent import SentEvent, sendEvent
+from mqtt.config import start_mqtt_loop, stop_mqtt_loop
 from typing import TypedDict
 
 async def scan_device(address: str, timeout: int):
@@ -44,21 +45,44 @@ class Config(TypedDict):
 	devices_list: list of device addresses. Can't be empty
 	automatic_scan: automatic scan in seconds. False to disable automatic scan
 	scan_timeout: scan timeout in seconds. Must be greater than 0
+	mqtt_host: MQTT host
+	mqtt_port: MQTT port
+	mqtt_username: MQTT username
+	mqtt_password: MQTT password
 	"""
 	devices_list: list[str]
 	automatic_scan: int | False
 	scan_timeout: int
+	mqtt_host: str
+	mqtt_port: int
+	mqtt_username: str
+	mqtt_password: str
 
 async def main(): 
 	# read devices_list from config.json
 	config = await Config.from_json(json.load(open("config.json")))
 
+	# Start MQTT client in background
+	start_mqtt_loop(config.mqtt_host, config.mqtt_port, config.mqtt_username, config.mqtt_password)
+	
+	# Initialize MQTT listeners
 	initListeners()
 
-	if config.automatic_scan:
-		while True:
-			await asyncio.sleep(config.automatic_scan)
-			await scan_devices(config.devices_list, config.scan_timeout)
+	try:
+		if config.automatic_scan:
+			while True:
+				await asyncio.sleep(config.automatic_scan)
+				await scan_devices(config.devices_list, config.scan_timeout)
+		else:
+			# Keep the app running even without automatic scanning
+			print("App is running and listening for MQTT events. Press Ctrl+C to exit.")
+			while True:
+				await asyncio.sleep(2)  # Keep the event loop alive
+	except KeyboardInterrupt:
+		print("Shutting down...")
+	finally:
+		deinitListeners()
+		stop_mqtt_loop()
 
 if __name__ == "__main__":
 	asyncio.run(main())

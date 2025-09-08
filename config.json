@@ -1,7 +1,0 @@
-{
-	"devices_list": [
-		"AC:DF:A1:C3:80:E3"
-	],
-	"automatic_scan": 60,
-	"scan_timeout": 600
-}

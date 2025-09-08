@@ -17,3 +17,6 @@ async def on_scan_request(client, userdata, msg):
 
 def initListeners():
 	mqttc.subscribe(ReceivedEvent.SCAN_REQUEST, on_scan_request)
+
+def deinitListeners():
+	mqttc.unsubscribe(ReceivedEvent.SCAN_REQUEST)

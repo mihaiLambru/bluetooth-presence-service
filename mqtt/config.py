@@ -13,15 +13,21 @@ def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
 
 mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-mqttc.on_connect = on_connect
-mqttc.on_message = on_message
 
-mqttc.username_pw_set(os.getenv("MQTT_USERNAME"), os.getenv("MQTT_PASSWORD"))
+# Remove the blocking call - we'll handle this in main.py
+# mqttc.loop_forever()
 
-mqttc.connect(os.getenv("MQTT_HOST"), os.getenv("MQTT_PORT"), 60)
+def start_mqtt_loop(mqtt_host: str, mqtt_port: int, mqtt_username: str, mqtt_password: str):
+    """Start the MQTT client loop in a non-blocking way"""
+    mqttc.on_connect = on_connect
+    mqttc.on_message = on_message
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
-mqttc.loop_forever()
+    mqttc.username_pw_set(mqtt_username, mqtt_password)
+
+    mqttc.connect(mqtt_host, mqtt_port, 60)
+
+    mqttc.loop_start()
+
+def stop_mqtt_loop():
+    """Stop the MQTT client loop"""
+    mqttc.loop_stop()
