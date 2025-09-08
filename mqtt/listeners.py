@@ -1,7 +1,4 @@
 from enum import Enum
-from config import mqttc
-from bt_scan import scan_devices
-from mqtt.sendEvent import SentEvent
 from typing import TypedDict
 
 class ReceivedEvent(Enum):

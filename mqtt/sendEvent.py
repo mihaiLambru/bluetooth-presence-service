@@ -1,7 +1,5 @@
 import enum, json
 from typing import TypedDict
-from config import EventType
-from config import mqttc
 from bleak.backends.device import BLEDevice
 
 class SentEvent(enum.Enum): 

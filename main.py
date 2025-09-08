@@ -1,9 +1,10 @@
+from ctypes import Union
 import asyncio, json, time
 from bleak import BleakClient, BleakScanner
 from mqtt.listeners import deinitListeners, initListeners
 from mqtt.sendEvent import SentEvent, sendEvent
 from mqtt.config import start_mqtt_loop, stop_mqtt_loop
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 async def scan_device(address: str, timeout: int):
 	"""Scan for a single device by address"""
@@ -43,7 +44,7 @@ async def scan_devices(known_devices: list[str], timeout: int):
 class Config(TypedDict):
 	"""
 	devices_list: list of device addresses. Can't be empty
-	automatic_scan: automatic scan in seconds. False to disable automatic scan
+	automatic_scan: automatic scan in seconds. 0 to disable automatic scan
 	scan_timeout: scan timeout in seconds. Must be greater than 0
 	mqtt_host: MQTT host
 	mqtt_port: MQTT port
@@ -51,19 +52,31 @@ class Config(TypedDict):
 	mqtt_password: MQTT password
 	"""
 	devices_list: list[str]
-	automatic_scan: int | False
+	automatic_scan: int
 	scan_timeout: int
 	mqtt_host: str
 	mqtt_port: int
 	mqtt_username: str
 	mqtt_password: str
 
+def read_config():
+	try:
+			with open("config.json", "r", encoding="utf-8") as f:
+					config = json.load(f)
+					print("Successfully read config", config)
+
+					return config
+	except FileNotFoundError:
+			print("File not found")
+	except json.JSONDecodeError as e:
+			print(f"Invalid JSON: {e}")
+
 async def main(): 
 	# read devices_list from config.json
-	config = await Config.from_json(json.load(open("config.json")))
+	config = Config(read_config())
 
 	# Start MQTT client in background
-	start_mqtt_loop(config.mqtt_host, config.mqtt_port, config.mqtt_username, config.mqtt_password)
+	start_mqtt_loop(config["mqtt_host"], config["mqtt_port"], config["mqtt_username"], config["mqtt_password"])
 	
 	# Initialize MQTT listeners
 	initListeners()
