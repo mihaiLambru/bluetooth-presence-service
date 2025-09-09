@@ -7,7 +7,7 @@ class SentEvent(enum.Enum):
 	DEVICE_UPDATE = "device_update"
 
 async def sendEvent(eventType: SentEvent, event: dict):
-  mqttc.publish(eventType, json.dumps(event))
+  mqttc.publish(eventType.value, json.dumps(event))
 
 class DeviceStatusUpdateData(TypedDict):
 	address: str

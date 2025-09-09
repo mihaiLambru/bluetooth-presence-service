@@ -15,7 +15,9 @@ async def on_scan_request(client, userdata, msg):
 	await scan_devices(scan_request.devices, scan_request.timeout)
 
 def initListeners():
-	mqttc.subscribe(ReceivedEvent.SCAN_REQUEST, on_scan_request)
+	mqttc.subscribe(ReceivedEvent.SCAN_REQUEST.value)
+	mqttc.message_callback_add(ReceivedEvent.SCAN_REQUEST.value, on_scan_request)
 
 def deinitListeners():
-	mqttc.unsubscribe(ReceivedEvent.SCAN_REQUEST)
+	mqttc.message_callback_remove(ReceivedEvent.SCAN_REQUEST.value)
+	mqttc.unsubscribe(ReceivedEvent.SCAN_REQUEST.value)
