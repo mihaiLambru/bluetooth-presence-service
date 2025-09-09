@@ -48,10 +48,13 @@ async def main():
 	initListeners()
 
 	try:
-		if config.automatic_scan:
+		# Check if automatic_scan exists and is greater than 0
+		automatic_scan = config.get("automatic_scan", 0)
+		if automatic_scan > 0:
+			print(f"Starting automatic scan every {automatic_scan} seconds")
 			while True:
-				await asyncio.sleep(config.automatic_scan)
-				await scan_devices(config.devices_list, config.scan_timeout)
+				await asyncio.sleep(automatic_scan)
+				await scan_devices(config["devices_list"], config["scan_timeout"])
 		else:
 			# Keep the app running even without automatic scanning
 			print("App is running and listening for MQTT events. Press Ctrl+C to exit.")
