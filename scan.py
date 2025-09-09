@@ -11,7 +11,7 @@ async def scan_device(address: str, timeout: int):
 
 		send_device_data = DeviceStatusUpdateData(address=address, device=device, found=device is not None)
 
-		await sendDeviceUpdateEvent(send_device_data)
+		sendDeviceUpdateEvent(send_device_data)
 
 		return {"address": address, "device": device, "found": device is not None}
 	except Exception as e:

@@ -6,9 +6,9 @@ from mqtt.config import mqttc
 class SentEvent(enum.Enum): 
 	DEVICE_UPDATE = "device_update"
 
-async def sendEvent(eventType: SentEvent, event: dict):
+def sendEvent(eventType: SentEvent, event: dict):
 	print(f"Sending event: {eventType.value} {event}")
-	await mqttc.publish(eventType.value, json.dumps(event))
+	mqttc.publish(eventType.value, json.dumps(event))
 
 class DeviceStatusUpdateData(TypedDict):
 	address: str
@@ -16,7 +16,7 @@ class DeviceStatusUpdateData(TypedDict):
 	found: bool
 
 
-async def sendDeviceUpdateEvent(event: DeviceStatusUpdateData):
+def sendDeviceUpdateEvent(event: DeviceStatusUpdateData):
 	deviceName = 'None'
 	if event['device']:
 		deviceName = event['device'].name
@@ -26,4 +26,4 @@ async def sendDeviceUpdateEvent(event: DeviceStatusUpdateData):
 		"deviceName": deviceName,
 		"found": event['found']
 	}
-	await sendEvent(SentEvent.DEVICE_UPDATE, data)
+	sendEvent(SentEvent.DEVICE_UPDATE, data)
