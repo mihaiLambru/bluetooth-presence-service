@@ -1,6 +1,7 @@
 
 from typing import TypedDict
-from mqtt import sendEvent
+
+from mqtt.sendEvent import sendEvent
 
 def get_discovery_topic(device_address: str):
 	safeDeviceAddress = device_address.replace(":", "_")
@@ -33,11 +34,8 @@ def publish_discovery_message(device_address: str):
 	discovery_payload = {
 		"dev": device_payload,
 		"o": origin,
-		"cmps": []
+		"cmps": cmps
 	}
-
-	
-	
 	sendEvent(discovery_topic, discovery_payload)
 
 def runDiscovery(devices: list[str]):
