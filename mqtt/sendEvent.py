@@ -16,4 +16,14 @@ class DeviceStatusUpdateData(TypedDict):
 
 
 async def sendDeviceUpdateEvent(event: DeviceStatusUpdateData):
-  mqttc.publish(SentEvent.DEVICE_UPDATE, f"address={event['address']},deviceName={event['device'].name if event['device'] else 'None'},found={event['found']}")
+	deviceName = 'None'
+	if event['device']:
+		deviceName = event['device'].name
+
+	data = {
+		"address": event['address'],
+		"deviceName": deviceName,
+		"found": event['found']
+	}
+
+	mqttc.publish(SentEvent.DEVICE_UPDATE, data)
