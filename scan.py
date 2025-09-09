@@ -9,7 +9,7 @@ async def scan_device(address: str, timeout: int):
 		device = await BleakScanner().find_device_by_address(address, timeout)
 		print(f"Found device {device.name} for address {address}")
 
-		await sendEvent(SentEvent.DEVICE_FOUND, {"address": address, "device": device, "found": device is not None})
+		await sendEvent(SentEvent.DEVICE_UPDATE, {"address": address, "device": device, "found": device is not None})
 
 		return {"address": address, "device": device, "found": device is not None}
 	except Exception as e:
@@ -29,10 +29,11 @@ async def scan_devices(known_devices: list[str], timeout: int):
 		tasks.append(scan_device(address, timeout))
 
 	results = await asyncio.gather(*tasks)
+	results = list(filter(lambda x: x["found"], results))
 	result["found_devices"] = list(map(lambda x: x["address"], results))
 
 	end_time = time.time()
 	result["run_time"] = end_time - start_time
-	print(f"Result: {result}")
+
 	# Mark scanning done
 	print(json.dumps(result))

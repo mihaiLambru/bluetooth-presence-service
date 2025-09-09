@@ -6,4 +6,7 @@ COPY . .
 
 RUN pip install .
 
-CMD ["python", "main.py"]
+# Set environment for D-Bus
+ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
+
+CMD python main.py
