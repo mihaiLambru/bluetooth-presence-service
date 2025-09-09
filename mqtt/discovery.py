@@ -1,14 +1,24 @@
 
-from typing import TypedDict
-
-from mqtt.sendEvent import sendEvent
+from typing import Dict, TypedDict
+from mqtt.sendEvent import sendEvent # type: ignore
 
 def get_discovery_topic(device_address: str):
 	safeDeviceAddress = device_address.replace(":", "_")
 	return f"homeassistant/device_tracker/{safeDeviceAddress}/config"
 
+class DevicePayload(TypedDict):
+	identifiers: list[str]
+	name: str
+	manufacturer: str
+	model: str
+	sw_version: str
 
-device_payload = {
+class DiscoveryPayload(TypedDict):
+	dev: DevicePayload
+	o: Dict[str, str]
+	cmps: Dict[str, Dict[str, str]]
+
+device_payload: DevicePayload = {
   "identifiers": ["bt-scan-service"],
   "name": "Bluetooth Presence Service",
   "manufacturer": "Mihai",
@@ -31,7 +41,7 @@ cmps = {
 
 def publish_discovery_message(device_address: str):
 	discovery_topic = get_discovery_topic(device_address)
-	discovery_payload = {
+	discovery_payload: DiscoveryPayload = {
 		"dev": device_payload,
 		"o": origin,
 		"cmps": cmps

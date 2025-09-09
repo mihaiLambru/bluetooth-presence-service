@@ -6,9 +6,9 @@ from mqtt.config import mqttc
 class SentEvent(enum.StrEnum): 
 	DEVICE_UPDATE = "device_update"
 
-def sendEvent(eventType: str, event: dict):
-	print(f"Sending event: {eventType} {event}")
-	mqttc.publish(eventType, json.dumps(event))
+def sendEvent(eventType: str, data: any) -> None: # type: ignore
+	print(f"Sending event: {eventType} {data}")
+	mqttc.publish(eventType, json.dumps(data))
 
 class DeviceStatusUpdateData(TypedDict):
 	address: str
@@ -20,7 +20,7 @@ def sendDeviceUpdateEvent(event: DeviceStatusUpdateData):
 	if event['device']:
 		deviceName = event['device'].name
 
-	data = {
+	data: dict = { # type: ignore
 		"address": event['address'],
 		"deviceName": deviceName,
 		"found": event['found']
