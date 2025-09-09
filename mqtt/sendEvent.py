@@ -7,7 +7,8 @@ class SentEvent(enum.Enum):
 	DEVICE_UPDATE = "device_update"
 
 async def sendEvent(eventType: SentEvent, event: dict):
-  mqttc.publish(eventType.value, json.dumps(event))
+	print(f"Sending event: {eventType.value} {event}")
+	await mqttc.publish(eventType.value, json.dumps(event))
 
 class DeviceStatusUpdateData(TypedDict):
 	address: str
@@ -25,5 +26,4 @@ async def sendDeviceUpdateEvent(event: DeviceStatusUpdateData):
 		"deviceName": deviceName,
 		"found": event['found']
 	}
-
-	mqttc.publish(SentEvent.DEVICE_UPDATE, data)
+	await sendEvent(SentEvent.DEVICE_UPDATE, data)
