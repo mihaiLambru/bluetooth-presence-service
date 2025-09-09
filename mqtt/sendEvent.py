@@ -3,12 +3,12 @@ from typing import TypedDict
 from bleak.backends.device import BLEDevice
 from mqtt.config import mqttc
 
-class SentEvent(enum.Enum): 
+class SentEvent(enum.StrEnum): 
 	DEVICE_UPDATE = "device_update"
 
 def sendEvent(eventType: str, event: dict):
-	print(f"Sending event: {eventType.value} {event}")
-	mqttc.publish(eventType.value, json.dumps(event))
+	print(f"Sending event: {eventType} {event}")
+	mqttc.publish(eventType, json.dumps(event))
 
 class DeviceStatusUpdateData(TypedDict):
 	address: str
