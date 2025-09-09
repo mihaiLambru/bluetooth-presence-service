@@ -2,9 +2,8 @@ from ctypes import Union
 import asyncio, json, time
 from bleak import BleakClient, BleakScanner
 from mqtt.listeners import deinitListeners, initListeners
-from mqtt.sendEvent import SentEvent, sendEvent
 from mqtt.config import start_mqtt_loop, stop_mqtt_loop
-from typing import Literal, TypedDict
+from typing import TypedDict
 from scan import scan_devices
 
 class Config(TypedDict):

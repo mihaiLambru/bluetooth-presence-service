@@ -1,6 +1,6 @@
 import asyncio, json, time
 from bleak import BleakScanner
-from mqtt.sendEvent import SentEvent, sendEvent
+from mqtt.sendEvent import DeviceStatusUpdateData, SentEvent, sendDeviceUpdateEvent
 
 async def scan_device(address: str, timeout: int):
 	"""Scan for a single device by address"""
@@ -9,7 +9,9 @@ async def scan_device(address: str, timeout: int):
 		device = await BleakScanner().find_device_by_address(address, timeout)
 		print(f"Found device {device.name} for address {address}")
 
-		await sendEvent(SentEvent.DEVICE_UPDATE, {"address": address, "device": device, "found": device is not None})
+		send_device_data = DeviceStatusUpdateData(address=address, device=device, found=device is not None)
+
+		await sendDeviceUpdateEvent(send_device_data)
 
 		return {"address": address, "device": device, "found": device is not None}
 	except Exception as e:
