@@ -9,4 +9,4 @@ RUN pip install .
 # Set environment for D-Bus
 ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 
-CMD python main.py
+CMD ["python", "-u", "main.py"]

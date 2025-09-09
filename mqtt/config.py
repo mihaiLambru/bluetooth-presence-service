@@ -1,4 +1,8 @@
+import json
+from typing import TypedDict
 import paho.mqtt.client as mqtt
+
+mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -10,8 +14,6 @@ def on_connect(client, userdata, flags, reason_code, properties):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
-
-mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
 # Remove the blocking call - we'll handle this in main.py
 # mqttc.loop_forever()

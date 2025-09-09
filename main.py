@@ -43,6 +43,8 @@ async def main():
 	# Start MQTT client in background
 	start_mqtt_loop(config["mqtt_host"], config["mqtt_port"], config["mqtt_username"], config["mqtt_password"])
 	
+	runDiscovery()
+	
 	# Initialize MQTT listeners
 	initListeners()
 
