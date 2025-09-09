@@ -1,6 +1,7 @@
 from ctypes import Union
 import asyncio, json, time
 from bleak import BleakClient, BleakScanner
+from mqtt.discovery import runDiscovery
 from mqtt.listeners import deinitListeners, initListeners
 from mqtt.config import start_mqtt_loop, stop_mqtt_loop
 from typing import TypedDict
