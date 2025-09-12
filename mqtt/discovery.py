@@ -35,41 +35,26 @@ class DiscoveryPayload(TypedDict):
 device_payload: DevicePayload = {
   "identifiers": ["bt-scan-service"],
   "name": "Bluetooth Presence Service",
-  "manufacturer": "Mihai",
+  "manufacturer": "Lambru",
   "model": "bt-presence",
   "sw_version": "0.1.0"
 }
-origin = {
-	"name":"origin.name",
-	"sw": "2.1",
-}
-cmps = {
-	"bluetooth_presence_device_tracker": {
-		"p": "device_tracker",
-		"device_class":"temperature",
-		"unit_of_measurement":"°C",
-		"value_template":"{{ value_json.temperature}}",
-		"unique_id":"temp01ae_t"
-	},
-}
 
-def publish_discovery_message(device_address: str):
+def publish_discovery_message_for_device_tracker(device_address: str):
 	print(f"Publishing discovery message for {device_address}")
 	discovery_topic = get_discovery_topic(device_address)
 	safe_device_address = device_address.replace(":", "_")
 	discovery_payload: DiscoveryPayload = {
 		"device": device_payload,
-		# "o": origin,
-		"components": cmps,
-		"state_topic": f"homeassistant/{Components.Device}/{safe_device_address}/state",
-		"name": "Mihai's tracker",
-		"unique_id": "mihais_tracker",
+		"state_topic": f"homeassistant/{Components.DeviceTracker}/{safe_device_address}/state",
+		"name": f"Device Tracker {device_address}",
+		"unique_id": f"device_tracker_{safe_device_address}",
 		"payload_home": HomeState.home,
 		"payload_not_home": HomeState.not_home,
-		"platform": Components.DeviceTracker
+		"source_type": "bluetooth_le"
 	}
 	sendEvent(discovery_topic, discovery_payload)
 
 def runDiscovery(devices: list[str]):
 	for device in devices:
-		publish_discovery_message(device)
+		publish_discovery_message_for_device_tracker(device)
