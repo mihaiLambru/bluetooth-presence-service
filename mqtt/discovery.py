@@ -47,7 +47,7 @@ def publish_discovery_message_for_device_tracker(device_address: str):
 	discovery_payload: DiscoveryPayload = {
 		"device": device_payload,
 		"state_topic": f"homeassistant/{Components.DeviceTracker}/{safe_device_address}/state",
-		"name": f"Device Tracker {device_address}",
+		"name": f"Device Tracker {safe_device_address}",
 		"unique_id": f"device_tracker_{safe_device_address}",
 		"payload_home": HomeState.home,
 		"payload_not_home": HomeState.not_home,
