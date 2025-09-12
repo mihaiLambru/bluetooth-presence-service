@@ -49,8 +49,8 @@ def publish_discovery_message_for_device_tracker(device_address: str):
 		"state_topic": f"homeassistant/{Components.DeviceTracker}/{safe_device_address}/state",
 		"name": f"Device Tracker {safe_device_address}",
 		"unique_id": f"device_tracker_{safe_device_address}",
-		"payload_home": HomeState.home,
-		"payload_not_home": HomeState.not_home,
+		"payload_home": HomeState.home.value,
+		"payload_not_home": HomeState.not_home.value,
 		"source_type": "bluetooth_le"
 	}
 	sendEvent(discovery_topic, discovery_payload)
