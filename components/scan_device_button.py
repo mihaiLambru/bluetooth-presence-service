@@ -35,7 +35,7 @@ def publish_discovery_message_for_scan_button(device_address: str):
 
 def on_scan_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage) -> None:
 	try:
-		device_address = msg.topic.split("/")[-1]
+		device_address = msg.topic.split("/")[-2]
 		print(f"Received scan button press for device {device_address}")
 		timeout = Config.get_scan_timeout()
 		asyncio.run(scan_device(device_address, timeout))
