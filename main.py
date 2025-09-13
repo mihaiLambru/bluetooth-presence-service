@@ -1,6 +1,6 @@
 import asyncio, json
 from config import Config, ConfigData
-from mqtt.discovery.runDiscovery import runDiscovery
+from mqtt.discovery.run_discovery import run_discovery
 from mqtt.listeners import initListeners
 from mqtt.config import start_mqtt_loop, stop_mqtt_loop
 from scan import scan_devices
@@ -28,7 +28,7 @@ async def main():
 
 	# Start MQTT client in background
 	start_mqtt_loop(config["mqtt_host"], config["mqtt_port"], config["mqtt_username"], config["mqtt_password"])
-	runDiscovery(config["devices_list"])
+	run_discovery(config["devices_list"])
 	
 	# Initialize MQTT listeners
 	initListeners()

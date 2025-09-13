@@ -5,7 +5,7 @@ from components.scan_all_button import publish_discovery_message_for_scan_all_bu
 from components.scan_device_button import publish_discovery_message_for_scan_button
 from components.scan_timeout_number import publish_discovery_message_for_timeout
 
-def runDiscovery(devices: list[str]):
+def run_discovery(devices: list[str]):
 	publish_discovery_message_for_timeout()
 	publish_discovery_message_for_scan_all_button()
 
