@@ -10,8 +10,8 @@ class SourceType(enum.StrEnum):
 	bluetooth_le = "bluetooth_le"
 
 class DeviceTrackerDiscoveryPayload(DiscoveryPayload):
-	payload_home: HomeState
-	payload_not_home: HomeState
+	payload_home: str
+	payload_not_home: str
 	source_type: SourceType
 	unit_of_measurement: NotRequired[str]
 	state_topic: str
@@ -46,17 +46,17 @@ def publish_discovery_message_for_device_tracker(device_address: str):
 		"state_topic": state_topic,
 		"name": f"Device Tracker {safe_device_address}",
 		"unique_id": f"device_tracker_{safe_device_address}",
-		"payload_home": HomeState.home,
-		"payload_not_home": HomeState.not_home,
+		"payload_home": HomeState.home.value,
+		"payload_not_home": HomeState.not_home.value,
 		"source_type": SourceType.bluetooth_le
 	}
 
 	sendEvent(discovery_topic, discovery_payload)
 
 def sendDeviceHomeEvent(device: DeviceStatusUpdateData):
-	deviceTopic = get_device_tracker_config_topic(device["address"])
+	deviceTopic = get_device_tracker_state_topic(device["address"])
 	sendEvent(deviceTopic, HomeState.home.value)
 
 def sendDeviceNotHomeEvent(deviceAddress: str):
-	deviceTopic = get_device_tracker_config_topic(deviceAddress)
+	deviceTopic = get_device_tracker_state_topic(deviceAddress)
 	sendEvent(deviceTopic, HomeState.not_home.value)
