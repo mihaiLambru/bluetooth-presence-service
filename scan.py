@@ -7,6 +7,10 @@ from mqtt.sendEvent import DeviceStatusUpdateData
 
 async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 	"""Scan for a single device by address"""
+	if (address == ""):
+		raise ValueError("Device address cannot be empty")
+
+	print(f"Scanning device {address} with timeout {timeout} seconds")
 	try:
 		# timeout 10 minutes
 		device = await BleakScanner().find_device_by_address(address, timeout)

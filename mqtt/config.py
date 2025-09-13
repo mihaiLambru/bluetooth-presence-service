@@ -11,7 +11,7 @@ def on_connect(client: mqtt.Client, userdata: None, flags: dict[str, str], rc: i
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage):
-		print(msg.topic+" "+str(msg.payload))
+	print(f'ON MESSAGE: {msg.topic} {str(msg.payload)}')
 
 # Remove the blocking call - we'll handle this in main.py
 # mqttc.loop_forever()

@@ -19,6 +19,9 @@ class DeviceTrackerDiscoveryPayload(DiscoveryPayload):
 
 # Device Tracker
 def get_device_tracker_core_topic(device_address: str):
+	if (device_address == ""):
+		raise ValueError("Device address cannot be empty")
+
 	safeDeviceAddress = device_address.replace(":", "_")
 	return f"homeassistant/{Components.DeviceTracker.value}/{safeDeviceAddress}"
 
@@ -27,7 +30,7 @@ def get_device_tracker_config_topic(device_address: str):
 	return f"{coreTopic}/config"
 
 
-def get_device_tracker_state_update_topic(device_address: str):
+def get_device_tracker_state_topic(device_address: str):
 	coreTopic = get_device_tracker_core_topic(device_address)
 	return f"{coreTopic}/state"
 
@@ -35,7 +38,7 @@ def get_device_tracker_state_update_topic(device_address: str):
 def publish_discovery_message_for_device_tracker(device_address: str):
 	print(f"Publishing discovery message for {device_address}")
 	discovery_topic = get_device_tracker_config_topic(device_address)
-	state_topic = get_device_tracker_state_update_topic(device_address)
+	state_topic = get_device_tracker_state_topic(device_address)
 	safe_device_address = device_address.replace(":", "_")
 
 	discovery_payload: DeviceTrackerDiscoveryPayload = {
