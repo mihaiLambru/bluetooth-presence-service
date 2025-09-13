@@ -3,7 +3,7 @@ import enum
 from typing import TypedDict
 from mqtt.sendEvent import sendEvent
 from mqtt.states import HomeState
-from mqtt.topics import get_device_tracker_config_topic, get_device_tracker_state_update_topic, get_discovery_topic # type: ignore
+from mqtt.topics import get_device_tracker_config_topic, get_device_tracker_state_update_topic
 
 class DevicePayload(TypedDict):
 	identifiers: list[str]
