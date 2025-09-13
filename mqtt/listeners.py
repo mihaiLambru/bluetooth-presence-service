@@ -1,32 +1,14 @@
-import json
-from enum import Enum
-from typing import TypedDict, Any
-import paho.mqtt.client as mqtt
+from components.scan_device_button import get_scan_button_command_topic, on_scan_button_press
+from components.scan_timeout_number import get_timeout_command_topic, on_timeout_change
+from config import Config
 from mqtt.config import mqttc
 
-class ReceivedEvent(Enum):
-	SCAN_REQUEST = "scan_request"
-
-class ScanRequest(TypedDict):
-	devices: list[str]
-	timeout: int
-
-def on_scan_request(client: mqtt.Client, userdata: Any, msg: mqtt.MQTTMessage) -> None:
-	try:
-		payload_str = msg.payload.decode('utf-8')
-		payload_data = json.loads(payload_str)
-		scan_request: ScanRequest = {
-			'devices': payload_data['devices'],
-			'timeout': payload_data['timeout']
-		}
-		print(f"Received scan request: {scan_request}")
-	except Exception as e:
-		print(f"Error processing scan request: {e}")
-
 def initListeners() -> None:
-	mqttc.subscribe(ReceivedEvent.SCAN_REQUEST.value)
-	mqttc.message_callback_add(ReceivedEvent.SCAN_REQUEST.value, on_scan_request)
+	timeout_topic = get_timeout_command_topic()
+	mqttc.subscribe(timeout_topic)
+	mqttc.message_callback_add(timeout_topic, on_timeout_change)
 
-def deinitListeners() -> None:
-	mqttc.message_callback_remove(ReceivedEvent.SCAN_REQUEST.value)
-	mqttc.unsubscribe(ReceivedEvent.SCAN_REQUEST.value)
+	for device_address in Config.get_instance()["devices_list"]:
+		scan_button_topic = get_scan_button_command_topic(device_address)
+		mqttc.subscribe(scan_button_topic)
+		mqttc.message_callback_add(scan_button_topic, on_scan_button_press)

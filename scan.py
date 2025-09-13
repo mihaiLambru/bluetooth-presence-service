@@ -2,7 +2,8 @@ import asyncio, json, time
 from typing import Any, Coroutine
 from typing import List
 from bleak import BleakScanner
-from mqtt.sendEvent import DeviceStatusUpdateData, sendDeviceHomeEvent
+from components.device_tracker import sendDeviceHomeEvent
+from mqtt.sendEvent import DeviceStatusUpdateData
 
 async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 	"""Scan for a single device by address"""
