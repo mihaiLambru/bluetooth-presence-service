@@ -35,6 +35,6 @@ def on_scan_all_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTT
 	try:
 		print(f"Received scan all button press")
 		timeout = Config.get_scan_timeout()
-		asyncio.run(scan_devices(Config.get_instance()["devices_list"], timeout))
+		asyncio.run(scan_devices(Config.get_instance().devices_list, timeout))
 	except Exception as e:
 		print(f"Error processing scan button press: {e}")
