@@ -2,7 +2,7 @@ import asyncio, json, time
 from typing import Any, Coroutine
 from typing import List
 from bleak import BleakScanner
-from components.device_tracker import sendDeviceHomeEvent
+from components.device_tracker import sendDeviceHomeEvent, sendDeviceNotHomeEvent
 from mqtt.sendEvent import DeviceStatusUpdateData
 
 async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
@@ -23,6 +23,8 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 		return send_device_data
 	except Exception as e:
 		print(f"Error scanning device {address}: {e}")
+		sendDeviceNotHomeEvent(address)
+
 		return DeviceStatusUpdateData(address=address, device=None, found=False)
 
 async def scan_devices(known_devices: list[str], timeout: int):
