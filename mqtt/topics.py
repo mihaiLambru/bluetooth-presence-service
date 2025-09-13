@@ -1,4 +1,7 @@
-from mqtt.discovery import Components
+import enum
+
+class Components(enum.StrEnum):
+	DeviceTracker = "device_tracker"
 
 def get_device_tracker_core_topic(device_address: str):
 	safeDeviceAddress = device_address.replace(":", "_")

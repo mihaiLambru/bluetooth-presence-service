@@ -5,9 +5,6 @@ from mqtt.sendEvent import sendEvent
 from mqtt.states import HomeState
 from mqtt.topics import get_device_tracker_config_topic, get_device_tracker_state_update_topic, get_discovery_topic # type: ignore
 
-class Components(enum.StrEnum):
-	DeviceTracker = "device_tracker"
-
 class DevicePayload(TypedDict):
 	identifiers: list[str]
 	name: str
