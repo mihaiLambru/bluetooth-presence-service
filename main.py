@@ -1,6 +1,4 @@
-from ctypes import Union
-import asyncio, json, time
-from bleak import BleakClient, BleakScanner
+import asyncio, json
 from mqtt.discovery import runDiscovery
 from mqtt.listeners import deinitListeners, initListeners
 from mqtt.config import start_mqtt_loop, stop_mqtt_loop
@@ -39,11 +37,14 @@ def read_config():
 
 async def main(): 
 	# read devices_list from config.json
-	config = Config(read_config())
+	raw_config = read_config()
+	if raw_config is None:
+		print("Failed to read config. Exiting.")
+		return
+	config: Config = raw_config  # type: ignore
 
 	# Start MQTT client in background
 	start_mqtt_loop(config["mqtt_host"], config["mqtt_port"], config["mqtt_username"], config["mqtt_password"])
-	
 	runDiscovery(config["devices_list"])
 	
 	# Initialize MQTT listeners

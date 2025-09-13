@@ -1,0 +1,5 @@
+{
+	"python.analysis.typeCheckingMode": "strict",
+	"notebook.defaultFormatter": "anysphere.cursorpyright",
+	"editor.defaultFormatter": "anysphere.cursorpyright"
+}
