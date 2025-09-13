@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "bt-scan"
 version = "0.1.0"
@@ -10,3 +14,6 @@ dependencies = [
 
 [project.scripts]
 bt-scan = "bt_scan.main:run"
+
+[tool.setuptools.packages.find]
+include = ["mqtt*", "components*"]
