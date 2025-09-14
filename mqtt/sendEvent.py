@@ -8,7 +8,13 @@ class SentEvent(enum.StrEnum):
 
 def sendEvent(eventType: str, data: object | str) -> None:
 	print(f"Sending event: {eventType} {data}")
-	mqttc.publish(eventType, json.dumps(data))
+	if isinstance(data, dict):
+		print("It's a dict object")
+		mqttc.publish(eventType, json.dumps(data))
+	if isinstance(data, str):
+		mqttc.publish(eventType, data)
+	else:
+		print('Unkown data while sending event')
 
 class DeviceStatusUpdateData(TypedDict):
 	address: str
