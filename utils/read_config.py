@@ -7,7 +7,7 @@ def read_config():
 	try:
 		with open("config.json", "r", encoding="utf-8") as f:
 			config = json.load(f)
-			logger.info("Successfully read config", config)
+			logger.info("Successfully read config: %s", config)
 
 			return config
 	except FileNotFoundError:

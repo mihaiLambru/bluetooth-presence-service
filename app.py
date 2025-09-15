@@ -15,9 +15,9 @@ async def app_main():
 	if raw_config is None:
 		logger.error("Failed to read config. Exiting.")
 		return
-	logger.info("Raw config read", raw_config)
+	logger.info("Raw config read: %s", raw_config)
 	config = Config.init(raw_config)
-	logger.info("Config initialized", config)
+	logger.info("Config initialized: %s", config)
 	# Start MQTT client in background
 	start_mqtt_loop(config.mqtt_host, config.mqtt_port, config.mqtt_username, config.mqtt_password)
 	run_discovery(config.devices_list)
