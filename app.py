@@ -1,9 +1,7 @@
 import asyncio
 import logging
 from config import Config
-from mqtt.discovery.run_discovery import run_discovery
-from mqtt.listeners import initListeners
-from mqtt.config import start_mqtt_loop, stop_mqtt_loop
+from mqtt.start_mqtt_loop import start_mqtt_loop, stop_mqtt_loop
 from scan import scan_devices
 from utils.read_config import read_config
 
@@ -20,10 +18,6 @@ async def app_main():
 	logger.info("Config initialized: %s", config)
 	# Start MQTT client in background
 	start_mqtt_loop(config.mqtt_host, config.mqtt_port, config.mqtt_username, config.mqtt_password)
-	run_discovery(config.devices_list)
-	
-	# Initialize MQTT listeners
-	initListeners()
 
 	try:
 		# Check if automatic_scan exists and is greater than 0
