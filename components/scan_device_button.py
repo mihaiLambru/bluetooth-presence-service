@@ -4,12 +4,13 @@ from config import Config
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
-from mqtt.sendEvent import sendEvent
+from mqtt.send_event import send_event
 import paho.mqtt.client as mqtt
 
 from scan import scan_device
 
 logger = logging.getLogger("components.scan_device_button")
+
 
 def get_scan_button_core_topic(device_address: str):
 	safeDeviceAddress = device_address.replace(":", "_")
@@ -34,7 +35,7 @@ def publish_discovery_message_for_scan_button(device_address: str):
 		device=device_payload,
 		command_topic=get_scan_button_command_topic(device_address),
 	)
-	sendEvent(discovery_topic, discovery_payload)
+	send_event(discovery_topic, discovery_payload)
 
 
 def get_device_address_from_topic(topic: str) -> str:

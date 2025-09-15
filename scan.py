@@ -4,7 +4,7 @@ from typing import Any, Coroutine
 from typing import List
 from bleak import BleakScanner
 from components.device_tracker import sendDeviceHomeEvent, sendDeviceNotHomeEvent
-from mqtt.sendEvent import DeviceStatusUpdateData
+from mqtt.send_event import DeviceStatusUpdateData
 
 logger = logging.getLogger("scan")
 

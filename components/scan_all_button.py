@@ -4,7 +4,7 @@ from config import Config
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
-from mqtt.sendEvent import sendEvent
+from mqtt.send_event import send_event
 import paho.mqtt.client as mqtt
 
 from scan import scan_devices
@@ -28,7 +28,7 @@ def publish_discovery_message_for_scan_all_button():
 		device=device_payload,
 		command_topic=scan_all_button_command_topic,
 	)
-	sendEvent(discovery_topic, discovery_payload)
+	send_event(discovery_topic, discovery_payload)
 
 def on_scan_all_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage) -> None:
 	try:

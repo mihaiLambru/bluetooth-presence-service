@@ -4,7 +4,7 @@ from typing import NotRequired
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
-from mqtt.sendEvent import DeviceStatusUpdateData, sendEvent
+from mqtt.send_event import DeviceStatusUpdateData, send_event
 from mqtt.types import HomeState
 
 logger = logging.getLogger("components.device_tracker")
@@ -54,12 +54,12 @@ def publish_discovery_message_for_device_tracker(device_address: str):
 		"source_type": SourceType.bluetooth_le
 	}
 
-	sendEvent(discovery_topic, discovery_payload)
+	send_event(discovery_topic, discovery_payload)
 
 def sendDeviceHomeEvent(device: DeviceStatusUpdateData):
 	deviceTopic = get_device_tracker_state_topic(device["address"])
-	sendEvent(deviceTopic, HomeState.home.value)
+	send_event(deviceTopic, HomeState.home.value)
 
 def sendDeviceNotHomeEvent(deviceAddress: str):
 	deviceTopic = get_device_tracker_state_topic(deviceAddress)
-	sendEvent(deviceTopic, HomeState.not_home.value)
+	send_event(deviceTopic, HomeState.not_home.value)
