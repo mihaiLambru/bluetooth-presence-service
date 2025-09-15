@@ -1,221 +1,222 @@
-# BLE Scanner with MQTT Integration
+# BT Scan - Bluetooth Presence Scanner for Home Assistant
 
-A Python tool for scanning Bluetooth Low Energy (BLE) devices in parallel and publishing results to MQTT brokers. Perfect for Home Assistant integration and IoT monitoring.
+A simple Bluetooth scanner designed to work with Home Assistant, providing more control over device presence detection than the standard Home Assistant BT presence sensor.
+
+## Reasoning
+
+I created this project because a simple Home Assistant BT presence sensor won't allow me to scan for a device when I want to. It is also able to scan for a device longer (for example when you are on your way home), providing more reliable presence detection for your smart home automation.
 
 ## Features
 
-- 🚀 **Parallel scanning** - Scan multiple BLE devices simultaneously
-- 📡 **MQTT integration** - Publish results to MQTT brokers
-- ⏱️ **Configurable timeouts** - Set custom scan timeouts
-- 🏠 **Home Assistant ready** - Compatible with HA MQTT discovery
-- 🔄 **Real-time updates** - Individual device results published as they arrive
-- 📊 **Summary reports** - Overall scan statistics
+- **On-demand scanning**: Trigger Bluetooth scans manually via MQTT commands
+- **Automatic scanning**: Configurable periodic scanning of all devices
+- **Individual device scanning**: Scan specific devices independently
+- **Home Assistant integration**: Automatic discovery and device tracker entities
+- **Configurable timeouts**: Adjust scan duration for different scenarios
+- **MQTT-based control**: Full integration with Home Assistant via MQTT
 
 ## Installation
 
+### Prerequisites
+
+- Python 3.8 or higher
+- Bluetooth adapter with BLE support
+- MQTT broker (e.g., Mosquitto)
+
+### Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/mihaiLambru/bluetooth-presence-service.git
+cd bt_scan
+```
+
+2. Create a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -e .
 ```
 
-## Quick Start
+4. Configure the application (see Configuration section below)
 
-### Basic Usage (No MQTT)
-
-```python
-import asyncio
-from bt_scan import scan_devices
-
-# Scan devices without MQTT
-devices = ["AA:BB:CC:DD:EE:FF", "11:22:33:44:55:66"]
-asyncio.run(scan_devices(devices, timeout=30))
-```
-
-### With MQTT Integration
-
-```python
-import asyncio
-from bt_scan import scan_devices, MQTTConfig
-
-# Configure MQTT
-mqtt_config = MQTTConfig(
-    broker="192.168.1.100",
-    port=1883,
-    username="mqtt_user",
-    password="mqtt_pass",
-    topic_prefix="home/bt_scan"
-)
-
-# Scan with MQTT publishing
-devices = ["AA:BB:CC:DD:EE:FF", "11:22:33:44:55:66"]
-asyncio.run(scan_devices(devices, timeout=30, mqtt_config=mqtt_config))
-```
-
-### Command Line Usage
-
+5. Run the application:
 ```bash
-# Run with default settings
-bt-scan
-
-# Or run examples
-python examples.py
-```
-
-## MQTT Topics
-
-The scanner publishes to two types of topics:
-
-### Individual Device Results
-**Topic:** `{topic_prefix}/device/{mac_address}`
-**Payload:**
-```json
-{
-  "address": "AA:BB:CC:DD:EE:FF",
-  "found": true,
-  "timestamp": 1703123456.789,
-  "name": "My Device",
-  "rssi": -45
-}
-```
-
-### Scan Summary
-**Topic:** `{topic_prefix}/summary`
-**Payload:**
-```json
-{
-  "total_devices": 5,
-  "found_count": 3,
-  "found_devices": ["AA:BB:CC:DD:EE:FF", "11:22:33:44:55:66"],
-  "scan_time": 12.34,
-  "timestamp": 1703123456.789
-}
+python main.py
 ```
 
 ## Configuration
 
-### Environment Variables
+The application is configured via the `config.json` file. Here's a detailed breakdown of each configuration option:
 
-Set these environment variables for automatic MQTT configuration:
+### config.json Structure
 
-```bash
-export MQTT_BROKER="192.168.1.100"
-export MQTT_PORT="1883"
-export MQTT_USERNAME="your_username"
-export MQTT_PASSWORD="your_password"
-export MQTT_TOPIC_PREFIX="home/bt_scan"
+```json
+{
+    "devices_list": [
+        "AC:DF:A1:C3:80:E3"
+    ],
+    "automatic_scan": 60,
+    "scan_timeout": 600,
+    "mqtt_host": "localhost",
+    "mqtt_port": 1883,
+    "mqtt_username": "user",
+    "mqtt_password": "plain_password"
+}
 ```
 
-### Programmatic Configuration
+### Configuration Options
 
-```python
-from bt_scan import MQTTConfig
+#### `devices_list` (array of strings)
+- **Description**: List of Bluetooth device MAC addresses to scan for
+- **Format**: MAC addresses in format `XX:XX:XX:XX:XX:XX`
+- **Example**: `["AC:DF:A1:C3:80:E3", "12:34:56:78:90:AB"]`
+- **Required**: Yes
 
-config = MQTTConfig(
-    broker="localhost",
-    port=1883,
-    username=None,  # Optional
-    password=None,  # Optional
-    topic_prefix="bt_scan"
-)
-```
+#### `automatic_scan` (integer)
+- **Description**: Interval in seconds for automatic scanning of all devices
+- **Default**: 60 seconds
+- **Special values**:
+  - `0`: Disable automatic scanning (manual control only)
+  - `> 0`: Scan all devices every N seconds
+- **Example**: `60` (scan every minute)
+
+#### `scan_timeout` (integer)
+- **Description**: Maximum time in seconds to wait for each device during scanning. This can be overwritten by Home Assistance
+- **Default**: 60 seconds
+- **Recommended**: 300-600 seconds for reliable detection
+- **Example**: `600` (10 minutes timeout)
+
+#### `mqtt_host` (string)
+- **Description**: MQTT broker hostname or IP address
+- **Format**: `mqtt://hostname` or `mqtt://ip_address`
+- **Example**: `"mqtt://192.168.1.100"` or `"mqtt://homeassistant.local"`
+
+#### `mqtt_port` (integer)
+- **Description**: MQTT broker port number
+- **Default**: 1883 (standard MQTT port)
+- **Example**: `1883`
+
+#### `mqtt_username` (string)
+- **Description**: Username for MQTT broker authentication
+- **Example**: `"mqtt_user"`
+
+#### `mqtt_password` (string)
+- **Description**: Password for MQTT broker authentication
+- **⚠️ Security Warning**: Currently stored in plain text
+- **Future Enhancement**: Encrypted password support planned
+- **Example**: `"your_secure_password"`
+
+### Security Considerations
+
+**⚠️ Important Security Notice**: The current version stores the MQTT password in plain text within the `config.json` file. Please be careful with the current configuration:
+
+1. **File Permissions**: Ensure `config.json` has restrictive file permissions:
+   ```bash
+   chmod 600 config.json
+   ```
+
+2. **Access Control**: Limit access to the configuration file to authorized users only
+
+3. **Network Security**: Use MQTT over TLS (port 8883) when possible for encrypted communication
+
+4. **Future Enhancement**: The project will support encrypted password storage in future versions to improve security
 
 ## Home Assistant Integration
 
-### MQTT Sensor Configuration
+The application automatically integrates with Home Assistant through MQTT discovery:
 
-Add to your `configuration.yaml`:
+### Device Trackers
+- Each device in `devices_list` becomes a device tracker entity
+- States: `home` (device found) or `not_home` (device not found)
+- Entity naming: `device_tracker.XX_XX_XX_XX_XX_XX`
+
+### Control Entities
+
+#### Scan All Button
+- **Entity**: `button.scan_all`
+- **Function**: Triggers scanning of all configured devices
+- **Topic**: `homeassistant/button/scan_all_button/command`
+
+#### Individual Device Scan Buttons
+- **Entity**: `button.scan_XX_XX_XX_XX_XX_XX`
+- **Function**: Triggers scanning of a specific device
+- **Topic**: `homeassistant/button/scan_device_button_XX_XX_XX_XX_XX_XX/command`
+
+#### Scan Timeout Number
+- **Entity**: `number.scan_timeout`
+- **Function**: Adjusts the scan timeout duration
+- **Topic**: `homeassistant/number/scan_timeout/command`
+
+## Usage
+
+### Automatic Mode
+When `automatic_scan` is set to a value greater than 0, the application will:
+1. Start automatically
+2. Scan all devices every N seconds
+3. Update Home Assistant device tracker states
+4. Continue running until stopped
+
+### Manual Mode
+When `automatic_scan` is set to 0, the application will:
+1. Start and wait for MQTT commands
+2. Only scan when triggered via Home Assistant buttons
+3. Provide full manual control over scanning
+
+### Home Assistant Automation Examples
 
 ```yaml
-mqtt:
-  sensor:
-    - name: "BLE Device Scanner"
-      state_topic: "home/bt_scan/summary"
-      value_template: "{{ value_json.found_count }}"
-      json_attributes_topic: "home/bt_scan/summary"
-      unit_of_measurement: "devices"
-      icon: "mdi:bluetooth"
-    
-    - name: "My BLE Device"
-      state_topic: "home/bt_scan/device/AA_BB_CC_DD_EE_FF"
-      value_template: "{{ 'home' if value_json.found else 'away' }}"
-      json_attributes_topic: "home/bt_scan/device/AA_BB_CC_DD_EE_FF"
-      icon: "mdi:bluetooth-connect"
+# Automatically scan when arriving home
+- alias: "Scan devices when arriving home"
+  trigger:
+    - platform: state
+      entity_id: device_tracker.person_phone
+      to: 'home'
+  action:
+    - service: button.press
+      entity_id: button.scan_all
+
+# Scan specific device when motion detected
+- alias: "Scan phone when motion detected"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor
+      to: 'on'
+  action:
+    - service: button.press
+      entity_id: button.scan_AC_DF_A1_C3_80_E3
 ```
-
-### Automation Example
-
-```yaml
-automation:
-  - alias: "BLE Device Presence"
-    trigger:
-      - platform: mqtt
-        topic: "home/bt_scan/device/+"
-    condition:
-      - condition: template
-        value_template: "{{ trigger.payload_json.found }}"
-    action:
-      - service: notify.mobile_app
-        data:
-          message: "Device {{ trigger.payload_json.name }} is present"
-```
-
-## Command Line Usage
-
-```bash
-# Basic scan
-python bt_scan.py
-
-# With environment variables for MQTT
-MQTT_BROKER=192.168.1.100 python bt_scan.py
-```
-
-## Performance
-
-- **Sequential scanning**: 5 devices × 30s timeout = 150s total
-- **Parallel scanning**: 5 devices × 30s timeout = ~30s total (5x faster!)
-
-## Error Handling
-
-The scanner gracefully handles:
-- Device not found
-- Connection timeouts
-- MQTT broker unavailable
-- Network interruptions
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Permission denied on Linux**:
-   ```bash
-   sudo setcap cap_net_raw+eip $(which python3)
-   ```
+1. **Device not found**: Increase `scan_timeout` value
+2. **MQTT connection failed**: Check broker credentials and network connectivity
+3. **Permission denied**: Ensure proper file permissions on `config.json`
+4. **Bluetooth errors**: Verify Bluetooth adapter is working and has BLE support
 
-2. **MQTT connection fails**:
-   - Check broker IP and port
-   - Verify credentials
-   - Ensure firewall allows connection
+### Logs
+The application provides detailed console output for debugging:
+- Configuration loading status
+- MQTT connection status
+- Device scanning results
+- Error messages
 
-3. **No devices found**:
-   - Verify MAC addresses are correct
-   - Check if devices are in range
-   - Ensure devices are advertising
-
-### Debug Mode
-
-Enable verbose logging:
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+## Development
 
 ## License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the terms specified in the LICENSE file.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
+
+## Support
+
+For support and questions, please open an issue in the project repository.
