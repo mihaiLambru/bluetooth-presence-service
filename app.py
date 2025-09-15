@@ -2,7 +2,7 @@ import asyncio
 import logging
 from config import Config
 from mqtt.start_mqtt_loop import start_mqtt_loop, stop_mqtt_loop
-from scan import scan_devices
+from utils.scan import scan_devices
 from utils.read_config import read_config
 
 logger = logging.getLogger("app")

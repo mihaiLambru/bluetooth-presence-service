@@ -4,7 +4,7 @@ from components.scan_timeout_number import get_timeout_command_topic, on_timeout
 from config import Config
 from mqtt.config import mqttc
 
-def initListeners() -> None:
+def init_listeners() -> None:
 	timeout_topic = get_timeout_command_topic()
 	mqttc.subscribe(timeout_topic)
 	mqttc.message_callback_add(timeout_topic, on_timeout_change)

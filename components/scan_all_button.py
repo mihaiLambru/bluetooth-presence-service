@@ -7,7 +7,7 @@ from mqtt.discovery.discovery_payload import DiscoveryPayload
 from mqtt.send_event import send_event
 import paho.mqtt.client as mqtt
 
-from scan import scan_devices
+from utils.scan import scan_devices
 
 logger = logging.getLogger("components.scan_all_button")
 
