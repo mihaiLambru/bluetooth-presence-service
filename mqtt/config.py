@@ -1,10 +1,13 @@
 import paho.mqtt.client as mqtt
+import logging
+
+logger = logging.getLogger("mqtt.config")
 
 mqttc = mqtt.Client()
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client: mqtt.Client, userdata: None, flags: dict[str, str], rc: int):
-	print(f"Connected with result code {rc}")
+	logger.info(f"Connected with result code {rc}")
 	# Subscribing in on_connect() means that if we lose the connection and
 	# reconnect then subscriptions will be renewed.
 	client.subscribe("$SYS/#")

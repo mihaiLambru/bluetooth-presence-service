@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from config import Config
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
@@ -7,6 +8,8 @@ from mqtt.sendEvent import sendEvent
 import paho.mqtt.client as mqtt
 
 from scan import scan_devices
+
+logger = logging.getLogger("components.scan_all_button")
 
 scan_all_button_core_topic = f"homeassistant/{Components.Button.value}/scan_all_button"
 
@@ -29,8 +32,8 @@ def publish_discovery_message_for_scan_all_button():
 
 def on_scan_all_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage) -> None:
 	try:
-		print(f"Received scan all button press")
+		logger.info(f"Received scan all button press")
 		timeout = Config.get_scan_timeout()
 		asyncio.run(scan_devices(Config.get_instance().devices_list, timeout))
 	except Exception as e:
-		print(f"Error processing scan button press: {e}")
+		logger.error(f"Error processing scan button press: {e}")

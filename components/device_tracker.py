@@ -1,10 +1,13 @@
 import enum
+import logging
 from typing import NotRequired
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
 from mqtt.sendEvent import DeviceStatusUpdateData, sendEvent
 from mqtt.types import HomeState
+
+logger = logging.getLogger("components.device_tracker")
 
 class SourceType(enum.StrEnum):
 	bluetooth_le = "bluetooth_le"
@@ -36,7 +39,7 @@ def get_device_tracker_state_topic(device_address: str):
 
 
 def publish_discovery_message_for_device_tracker(device_address: str):
-	print(f"Publishing discovery message for {device_address}")
+	logger.info(f"Publishing discovery message for {device_address}")
 	discovery_topic = get_device_tracker_config_topic(device_address)
 	state_topic = get_device_tracker_state_topic(device_address)
 	safe_device_address = device_address.replace(":", "_")

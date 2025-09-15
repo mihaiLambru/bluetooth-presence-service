@@ -1,9 +1,12 @@
+import logging
 from config import Config
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
 from mqtt.sendEvent import sendEvent
 import paho.mqtt.client as mqtt
+
+logger = logging.getLogger("components.scan_timeout_number")
 
 timeout_core_topic = f"homeassistant/{Components.Number.value}/timeout"
 
@@ -41,7 +44,7 @@ def on_timeout_change(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage
 	try:
 		payload_str = msg.payload.decode('utf-8')
 		new_timeout = int(payload_str)
-		print(f"Received timeout change: {new_timeout}")
+		logger.info(f"Received timeout change: {new_timeout}")
 		Config.set_scan_timeout(new_timeout)
 	except Exception as e:
-		print(f"Error processing timeout change: {e}")
+		logger.error(f"Error processing timeout change: {e}")
