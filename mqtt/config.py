@@ -4,4 +4,3 @@ import logging
 logger = logging.getLogger("mqtt.config")
 
 mqttc = mqtt.Client()
-

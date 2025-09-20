@@ -1,4 +1,4 @@
-import asyncio, time
+import asyncio, time, json
 import logging
 from typing import Any, Coroutine
 from typing import List
@@ -15,13 +15,19 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 
 	logger.info(f"Scanning device {address} with timeout {timeout} seconds")
 	try:
-		# timeout 10 minutes
 		device = await BleakScanner().find_device_by_address(address, timeout)
 
 		if device is None:
 			raise Exception("Device not found")
-		
-		logger.info(f"Found device {getattr(device, 'name', 'Unknown')} for address {address}")
+
+		details = device.details
+
+		try:
+			logger.debug(f"Device details: {json.dumps(details)}")
+		except Exception as e:
+			logger.error(f"Error getting device details: {e}")
+
+		logger.info(f"Found device: {getattr(device, 'name', 'Unknown')}")
 
 		send_device_data = DeviceStatusUpdateData(address=address, device=device, found=True)
 
