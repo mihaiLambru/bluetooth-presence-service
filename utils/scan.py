@@ -1,4 +1,4 @@
-import asyncio, time, json
+import asyncio, time
 import logging
 from typing import Any, Coroutine
 from typing import List
@@ -23,7 +23,7 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 		details = device.details
 
 		try:
-			logger.debug(f"Device details: {json.dumps(details)}")
+			logger.debug(f"Device details: {repr(details)}")
 		except Exception as e:
 			logger.error(f"Error getting device details: {e}")
 
