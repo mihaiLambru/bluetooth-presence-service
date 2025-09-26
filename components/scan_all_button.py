@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import threading
 from config import Config
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
@@ -30,10 +31,26 @@ def publish_discovery_message_for_scan_all_button():
 	)
 	send_event(discovery_topic, discovery_payload)
 
+def _run_scan_in_thread(devices_list: list[str], timeout: int):
+	"""Run scan in a separate thread to avoid blocking MQTT"""
+	try:
+		asyncio.run(scan_devices(devices_list, timeout))
+	except Exception as e:
+		logger.error(f"Error in scan thread: {e}")
+
 def on_scan_all_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage) -> None:
 	try:
 		logger.info(f"Received scan all button press")
 		timeout = Config.get_scan_timeout()
-		asyncio.run(scan_devices(Config.get_instance().devices_list, timeout))
+		devices_list = Config.get_instance().devices_list
+		
+		# Run scan in a separate thread to avoid blocking MQTT callback
+		scan_thread = threading.Thread(
+			target=_run_scan_in_thread,
+			args=(devices_list, timeout),
+			daemon=True
+		)
+		scan_thread.start()
+		logger.debug("Scan thread started")
 	except Exception as e:
 		logger.error(f"Error processing scan button press: {e}")
