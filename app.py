@@ -19,20 +19,31 @@ async def app_main():
 	# Start MQTT client in background
 	start_mqtt_loop(config.mqtt_host, config.mqtt_port, config.mqtt_username, config.mqtt_password)
 
+	# Create a shutdown event
+	shutdown_event = asyncio.Event()
+	
+	def signal_handler():
+		logger.info("Shutdown signal received")
+		shutdown_event.set()
+
 	try:
 		# Check if automatic_scan exists and is greater than 0
 		automatic_scan = config.automatic_scan
 		if automatic_scan > 0:
 			logger.info(f"Starting automatic scan every {automatic_scan} seconds")
-			while True:
+			while not shutdown_event.is_set():
 				await scan_devices(config.devices_list, config.scan_timeout)
-				await asyncio.sleep(automatic_scan)
+				try:
+					await asyncio.wait_for(shutdown_event.wait(), timeout=automatic_scan)
+					break  # Event was set, exit loop
+				except asyncio.TimeoutError:
+					continue  # Timeout reached, continue scanning
 		else:
 			# Keep the app running even without automatic scanning
 			logger.info("App is running and listening for MQTT events. Press Ctrl+C to exit.")
-			while True:
-				await asyncio.sleep(2)  # Keep the event loop alive
+			await shutdown_event.wait()  # Wait indefinitely until shutdown
 	except KeyboardInterrupt:
 		logger.info("Shutting down...")
+		signal_handler()
 	finally:
 		stop_mqtt_loop()

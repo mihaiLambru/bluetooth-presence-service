@@ -8,6 +8,8 @@ from mqtt.send_event import DeviceStatusUpdateData
 
 logger = logging.getLogger("scan")
 
+scanner: BleakScanner = BleakScanner()
+
 async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 	"""Scan for a single device by address"""
 	if (address == ""):
@@ -17,7 +19,7 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 	try:
 		# Add extra timeout protection to prevent hanging
 		device = await asyncio.wait_for(
-			BleakScanner.find_device_by_address(address, timeout),
+			scanner.find_device_by_address(address, timeout),
 			timeout=timeout + 5  # Add 5 seconds buffer
 		)
 
