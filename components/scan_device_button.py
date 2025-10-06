@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import threading
-from config import Config
+from config import Config, Device
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
@@ -28,13 +28,15 @@ def get_scan_button_command_topic(device_address: str):
 class ScanButtonDiscoveryPayload(DiscoveryPayload):
 	command_topic: str
 
-def publish_discovery_message_for_scan_button(device_address: str):
-	discovery_topic = get_scan_button_config_topic(device_address)
+def publish_discovery_message_for_scan_button(device: Device):
+	discovery_topic = get_scan_button_config_topic(device.address)
+	safe_device_address = device.address.replace(":", "_")
+	
 	discovery_payload = ScanButtonDiscoveryPayload(
-		name=f"Scan {device_address}",
-		unique_id=f"scan_button_{device_address}",
+		name=f"Scan {device.name}",
+		unique_id=f"scan_button_{safe_device_address}",
 		device=device_payload,
-		command_topic=get_scan_button_command_topic(device_address),
+		command_topic=get_scan_button_command_topic(device.address),
 	)
 	send_event(discovery_topic, discovery_payload)
 

@@ -1,6 +1,7 @@
 import enum
 import logging
 from typing import NotRequired
+from config import Device
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
@@ -38,16 +39,16 @@ def get_device_tracker_state_topic(device_address: str):
 	return f"{coreTopic}/state"
 
 
-def publish_discovery_message_for_device_tracker(device_address: str):
-	logger.info(f"Publishing discovery message for {device_address}")
-	discovery_topic = get_device_tracker_config_topic(device_address)
-	state_topic = get_device_tracker_state_topic(device_address)
-	safe_device_address = device_address.replace(":", "_")
+def publish_discovery_message_for_device_tracker(device: Device):
+	logger.info(f"Publishing discovery message for {device.address}")
+	discovery_topic = get_device_tracker_config_topic(device.address)
+	state_topic = get_device_tracker_state_topic(device.address)
+	safe_device_address = device.address.replace(":", "_")
 
 	discovery_payload: DeviceTrackerDiscoveryPayload = {
 		"device": device_payload,
 		"state_topic": state_topic,
-		"name": f"Device Tracker {safe_device_address}",
+		"name": f"Device Tracker {device.name}",
 		"unique_id": f"device_tracker_{safe_device_address}",
 		"payload_home": HomeState.home.value,
 		"payload_not_home": HomeState.not_home.value,

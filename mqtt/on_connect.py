@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 import logging
-from mqtt.discovery.run_discovery import run_discovery
+from mqtt.discovery.run_discovery import run_discovery_every_hour
 from config import Config
 from mqtt.listeners import init_listeners
 
@@ -10,7 +10,7 @@ def on_connect(client: mqtt.Client, userdata: None, flags: dict[str, str], rc: i
 	logger.info(f"Connected with result code {rc}")
 		
 	if rc == 0:
-		run_discovery(Config.get_instance().devices_list)
+		run_discovery_every_hour(Config.get_instance().devices)
 		init_listeners()
 		client.subscribe("$SYS/#")
 	else:

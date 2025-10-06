@@ -8,6 +8,7 @@ from bleak.args.bluez import BlueZDiscoveryFilters
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 from components.device_tracker import sendDeviceHomeEvent, sendDeviceNotHomeEvent
+from config import Config
 from mqtt.send_event import DeviceStatusUpdateData
 
 logger = logging.getLogger("scan")
@@ -18,13 +19,15 @@ scanner_lock = asyncio.Lock()
 def on_device_found(device: BLEDevice, advertisement_data: AdvertisementData):
 	logger.info('Device found: %s, %s', device, advertisement_data)
 	try:
-			formattedDevice = pprint.pformat(device, width=100, depth=3)
-			formattedAdvertisementData = pprint.pformat(advertisement_data, width=100, depth=3)
-			logger.info('%s: %s', 'device', formattedDevice)
-			logger.info('%s: %s', 'advertisement_data', formattedAdvertisementData)
+		if device.name is not None:
+			Config.set_device_name(device.address, device.name)
+		formattedDevice = pprint.pformat(device, width=100, depth=3)
+		formattedAdvertisementData = pprint.pformat(advertisement_data, width=100, depth=3)
+		logger.info('%s: %s', 'device', formattedDevice)
+		logger.info('%s: %s', 'advertisement_data', formattedAdvertisementData)
 	except Exception as e:
-			logger.warning('%s: %r (pprint failed: %s)', 'device', e)
-			logger.warning('%s: %r (pprint failed: %s)', 'advertisement_data', e)
+		logger.warning('%s: %r (pprint failed: %s)', 'device', e)
+		logger.warning('%s: %r (pprint failed: %s)', 'advertisement_data', e)
 
 async def get_scanner():
 	global scanner
