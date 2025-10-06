@@ -15,6 +15,7 @@ class Config:
 			self.devices_list: list[str] = configData["devices_list"]
 			self.automatic_scan: int = configData["automatic_scan"]
 			self.scan_timeout: int = configData.get("scan_timeout", 60)
+			self.discovery_interval: int = configData.get("discovery_interval", 3600)  # Default 1 hour
 			self.mqtt_host: str = configData["mqtt_host"]
 			self.mqtt_port: int = configData["mqtt_port"]
 			self.mqtt_username: str = configData["mqtt_username"]

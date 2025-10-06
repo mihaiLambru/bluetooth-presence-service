@@ -1,16 +1,55 @@
+import pprint
 import asyncio, time
 import logging
 from typing import Any, Coroutine
 from typing import List
 from bleak import BleakScanner
+from bleak.args.bluez import BlueZDiscoveryFilters
+from bleak.backends.device import BLEDevice
+from bleak.backends.scanner import AdvertisementData
 from components.device_tracker import sendDeviceHomeEvent, sendDeviceNotHomeEvent
 from mqtt.send_event import DeviceStatusUpdateData
 
 logger = logging.getLogger("scan")
 
-scanner: BleakScanner = BleakScanner()
+scanner: BleakScanner | None = None
+scanner_lock = asyncio.Lock()
 
-async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
+def on_device_found(device: BLEDevice, advertisement_data: AdvertisementData):
+	logger.info('Device found: %s, %s', device, advertisement_data)
+	try:
+			formattedDevice = pprint.pformat(device, width=100, depth=3)
+			formattedAdvertisementData = pprint.pformat(advertisement_data, width=100, depth=3)
+			logger.info('%s: %s', 'device', formattedDevice)
+			logger.info('%s: %s', 'advertisement_data', formattedAdvertisementData)
+	except Exception as e:
+			logger.warning('%s: %r (pprint failed: %s)', 'device', e)
+			logger.warning('%s: %r (pprint failed: %s)', 'advertisement_data', e)
+
+async def get_scanner():
+	global scanner
+	async with scanner_lock:
+		if scanner is None:
+			logger.info("Creating new scanner")
+			scanning_filters: BlueZDiscoveryFilters = {
+				"Transport": "le",
+				"DuplicateData": False,
+				"RSSI": -90
+			}
+			scanner = BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters)
+			return scanner
+		else: 
+			return scanner
+
+async def remove_scanner():
+	global scanner
+	async with scanner_lock:
+		if scanner is not None:
+			logger.info("Removing scanner")
+			await scanner.stop()
+			scanner = None
+
+async def scan_device(address: str, timeout: int) -> None:
 	"""Scan for a single device by address"""
 	if (address == ""):
 		raise ValueError("Device address cannot be empty")
@@ -18,6 +57,7 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 	logger.info(f"Scanning device {address} with timeout {timeout} seconds")
 	try:
 		# Add extra timeout protection to prevent hanging
+		scanner = await get_scanner()
 		device = await asyncio.wait_for(
 			scanner.find_device_by_address(address, timeout),
 			timeout=timeout + 5  # Add 5 seconds buffer
@@ -26,8 +66,9 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 		if device is None:
 			logger.info(f"Device {address} not found")
 			sendDeviceNotHomeEvent(address)
-			return DeviceStatusUpdateData(address=address, device=None, found=False)
 
+			await remove_scanner()
+			return
 		try:
 			details = device.details
 			logger.debug(f"Device details: {details}")
@@ -38,16 +79,14 @@ async def scan_device(address: str, timeout: int) -> DeviceStatusUpdateData:
 
 		send_device_data = DeviceStatusUpdateData(address=address, device=device, found=True)
 		sendDeviceHomeEvent(send_device_data)
-
-		return send_device_data
 	except asyncio.TimeoutError:
 		logger.warning(f"Timeout scanning device {address} after {timeout + 5} seconds")
 		sendDeviceNotHomeEvent(address)
-		return DeviceStatusUpdateData(address=address, device=None, found=False)
 	except Exception as e:
 		logger.error(f"Error scanning device {address}: {e}")
 		sendDeviceNotHomeEvent(address)
-		return DeviceStatusUpdateData(address=address, device=None, found=False)
+	finally:
+		await remove_scanner()
 
 async def scan_devices(known_devices: list[str], timeout: int):
 	logger.info(f"Scanning for {len(known_devices)} devices with timeout {timeout} seconds")
@@ -58,7 +97,7 @@ async def scan_devices(known_devices: list[str], timeout: int):
 	
 	# Mark scanning active
 	start_time = time.time()
-	tasks: List[Coroutine[Any, Any, DeviceStatusUpdateData]] = []
+	tasks: List[Coroutine[Any, Any, None]] = []
 
 	# connect to known devices
 	for address in known_devices:
