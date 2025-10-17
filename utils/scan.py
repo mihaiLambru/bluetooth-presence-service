@@ -70,7 +70,6 @@ async def scan_device(address: str, timeout: int) -> None:
 			logger.info(f"Device {address} not found")
 			sendDeviceNotHomeEvent(address)
 
-			await remove_scanner()
 			return
 		try:
 			details = device.details
