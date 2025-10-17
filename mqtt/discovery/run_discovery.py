@@ -20,6 +20,6 @@ def run_discovery_every_hour(devices: DevicesList):
     run_discovery(devices)
     
     # Schedule next execution
-    timer = threading.Timer(3600, run_discovery)
+    timer = threading.Timer(3600, run_discovery_every_hour, args=[devices])
     timer.daemon = True  # Dies when main thread dies
     timer.start()

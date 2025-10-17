@@ -88,8 +88,6 @@ async def scan_device(address: str, timeout: int) -> None:
 	except Exception as e:
 		logger.error(f"Error scanning device {address}: {e}")
 		sendDeviceNotHomeEvent(address)
-	finally:
-		await remove_scanner()
 
 async def scan_devices(known_devices: list[str], timeout: int):
 	logger.info(f"Scanning for {len(known_devices)} devices with timeout {timeout} seconds")
