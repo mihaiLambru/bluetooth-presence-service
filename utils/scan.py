@@ -54,13 +54,18 @@ async def remove_scanner():
 
 async def scan_device(address: str, timeout: int) -> None:
 	"""Scan for a single device by address"""
+	scanner = await get_scanner()
+	await _scan_device(address, timeout, scanner)
+	await remove_scanner()
+
+async def _scan_device(address: str, timeout: int, scanner: BleakScanner) -> None:
+	"""Scan for a single device by address"""
 	if (address == ""):
 		raise ValueError("Device address cannot be empty")
 
 	logger.info(f"Scanning device {address} with timeout {timeout} seconds")
 	try:
 		# Add extra timeout protection to prevent hanging
-		scanner = await get_scanner()
 		device = await asyncio.wait_for(
 			scanner.find_device_by_address(address, timeout),
 			timeout=timeout + 5  # Add 5 seconds buffer
@@ -84,6 +89,7 @@ async def scan_device(address: str, timeout: int) -> None:
 	except asyncio.TimeoutError:
 		logger.warning(f"Timeout scanning device {address} after {timeout + 5} seconds")
 		sendDeviceNotHomeEvent(address)
+
 	except Exception as e:
 		logger.error(f"Error scanning device {address}: {e}")
 		sendDeviceNotHomeEvent(address)
@@ -100,11 +106,13 @@ async def scan_devices(known_devices: list[str], timeout: int):
 	tasks: List[Coroutine[Any, Any, None]] = []
 
 	# connect to known devices
+	scanner = await get_scanner()
 	for address in known_devices:
-		tasks.append(scan_device(address, timeout))
+		tasks.append(_scan_device(address, timeout, scanner))
 
 	try:
 		results = await asyncio.gather(*tasks, return_exceptions=True)
+		await remove_scanner()
 		
 		# Log any exceptions that occurred
 		for i, result in enumerate(results):

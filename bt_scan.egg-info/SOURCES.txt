@@ -14,7 +14,10 @@ components/scan_timeout_number.py
 mqtt/__init__.py
 mqtt/config.py
 mqtt/listeners.py
-mqtt/sendEvent.py
+mqtt/on_connect.py
+mqtt/on_disconnect.py
+mqtt/send_event.py
+mqtt/start_mqtt_loop.py
 mqtt/types.py
 mqtt/discovery/__init__.py
 mqtt/discovery/components.py
