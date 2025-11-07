@@ -108,6 +108,7 @@ async def scan_devices(known_devices: list[str], timeout: int):
 	# connect to known devices
 	scanner = await get_scanner()
 	for address in known_devices:
+		# this won't work because we need one scanner for each device
 		tasks.append(_scan_device(address, timeout, scanner))
 
 	try:
