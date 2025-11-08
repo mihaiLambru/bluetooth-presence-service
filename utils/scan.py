@@ -13,9 +13,6 @@ from mqtt.send_event import DeviceStatusUpdateData
 
 logger = logging.getLogger("scan")
 
-scanner: BleakScanner | None = None
-scanner_lock = asyncio.Lock()
-
 def on_device_found(device: BLEDevice, advertisement_data: AdvertisementData):
 	logger.info('Device found: %s, %s', device, advertisement_data)
 	try:
@@ -30,41 +27,21 @@ def on_device_found(device: BLEDevice, advertisement_data: AdvertisementData):
 		logger.warning('%s: %r (pprint failed: %s)', 'advertisement_data', e)
 
 async def create_scanner():
+	logger.debug("Creating new scanner")
 	scanning_filters: BlueZDiscoveryFilters = {
 		"Transport": "le",
 		"DuplicateData": False,
 		"RSSI": -90
 	}
-	return BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters)
+	scanner = BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters)
+	await scanner.start()
 
-async def get_scanner():
-	global scanner
-	async with scanner_lock:
-		if scanner is None:
-			logger.info("Creating new scanner")
-			scanner = await create_scanner()
-
-			return scanner
-		else: 
-			return scanner
-
-async def remove_scanner():
-	global scanner
-	async with scanner_lock:
-		if scanner is not None:
-			logger.info("Removing scanner")
-			await scanner.stop()
-			scanner = None
+	return scanner
 
 async def scan_device(address: str, timeout: int) -> None:
 	"""Scan for a single device by address"""
-	scanning_filters: BlueZDiscoveryFilters = {
-		"Transport": "le",
-		"DuplicateData": False,
-		"RSSI": -90
-	}
-	async with BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters) as scanner:
-		await _scan_device(address, timeout, scanner)
+	scanner = await create_scanner()
+	await _scan_device(address, timeout, scanner)
 
 async def _scan_device(address: str, timeout: int, scanner: BleakScanner) -> None:
 	"""Scan for a single device by address"""
