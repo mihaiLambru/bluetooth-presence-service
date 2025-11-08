@@ -29,17 +29,21 @@ def on_device_found(device: BLEDevice, advertisement_data: AdvertisementData):
 		logger.warning('%s: %r (pprint failed: %s)', 'device', e)
 		logger.warning('%s: %r (pprint failed: %s)', 'advertisement_data', e)
 
+async def create_scanner():
+	scanning_filters: BlueZDiscoveryFilters = {
+		"Transport": "le",
+		"DuplicateData": False,
+		"RSSI": -90
+	}
+	return BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters)
+
 async def get_scanner():
 	global scanner
 	async with scanner_lock:
 		if scanner is None:
 			logger.info("Creating new scanner")
-			scanning_filters: BlueZDiscoveryFilters = {
-				"Transport": "le",
-				"DuplicateData": False,
-				"RSSI": -90
-			}
-			scanner = BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters)
+			scanner = await create_scanner()
+
 			return scanner
 		else: 
 			return scanner
@@ -54,13 +58,18 @@ async def remove_scanner():
 
 async def scan_device(address: str, timeout: int) -> None:
 	"""Scan for a single device by address"""
-	scanner = await get_scanner()
-	await _scan_device(address, timeout, scanner)
-	await remove_scanner()
+	scanning_filters: BlueZDiscoveryFilters = {
+		"Transport": "le",
+		"DuplicateData": False,
+		"RSSI": -90
+	}
+	async with BleakScanner(discovery_callback=on_device_found, scanning_filters=scanning_filters) as scanner:
+		await _scan_device(address, timeout, scanner)
 
 async def _scan_device(address: str, timeout: int, scanner: BleakScanner) -> None:
 	"""Scan for a single device by address"""
 	if (address == ""):
+		await scanner.stop()
 		raise ValueError("Device address cannot be empty")
 
 	logger.info(f"Scanning device {address} with timeout {timeout} seconds")
@@ -89,10 +98,11 @@ async def _scan_device(address: str, timeout: int, scanner: BleakScanner) -> Non
 	except asyncio.TimeoutError:
 		logger.warning(f"Timeout scanning device {address} after {timeout + 5} seconds")
 		sendDeviceNotHomeEvent(address)
-
 	except Exception as e:
 		logger.error(f"Error scanning device {address}: {e}")
 		sendDeviceNotHomeEvent(address)
+	
+	await scanner.stop()
 
 async def scan_devices(known_devices: list[str], timeout: int):
 	logger.info(f"Scanning for {len(known_devices)} devices with timeout {timeout} seconds")
@@ -106,14 +116,12 @@ async def scan_devices(known_devices: list[str], timeout: int):
 	tasks: List[Coroutine[Any, Any, None]] = []
 
 	# connect to known devices
-	scanner = await get_scanner()
 	for address in known_devices:
-		# this won't work because we need one scanner for each device
+		scanner = await create_scanner()
 		tasks.append(_scan_device(address, timeout, scanner))
 
 	try:
 		results = await asyncio.gather(*tasks, return_exceptions=True)
-		await remove_scanner()
 		
 		# Log any exceptions that occurred
 		for i, result in enumerate(results):
