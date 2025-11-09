@@ -14,7 +14,7 @@ class DevicesList:
 			raise ValueError(f"Device with address {address} not found")
 		return matches[0]
 	def get_addresses(self) -> list[str]:
-		return list[str](map[str](lambda device: device.address, self.devices))
+		return [device.address for device in self.devices]
 	def __getitem__(self, address: str) -> Device:
 		return self._find_device(address)
 	def set_device_name(self, address: str, name: str) -> None:
