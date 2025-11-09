@@ -31,9 +31,11 @@ class ScanButtonDiscoveryPayload(DiscoveryPayload):
 def publish_discovery_message_for_scan_button(device: Device):
 	discovery_topic = get_scan_button_config_topic(device.address)
 	safe_device_address = device.address.replace(":", "_")
+
+	device_name = device.name if device.name is not None else safe_device_address
 	
 	discovery_payload = ScanButtonDiscoveryPayload(
-		name=f"Scan {device.name}",
+		name=f"Scan {device_name}",
 		unique_id=f"scan_button_{safe_device_address}",
 		device=device_payload,
 		command_topic=get_scan_button_command_topic(device.address),

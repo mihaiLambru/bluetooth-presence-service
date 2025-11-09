@@ -13,7 +13,7 @@ def init_listeners() -> None:
 	mqttc.subscribe(scan_all_button_topic)
 	mqttc.message_callback_add(scan_all_button_topic, on_scan_all_button_press)
 
-	for device_address in Config.get_instance().devices_list:
+	for device_address in Config.get_instance().devices.get_addresses():
 		scan_button_topic = get_scan_button_command_topic(device_address)
 		mqttc.subscribe(scan_button_topic)
 		mqttc.message_callback_add(scan_button_topic, on_scan_button_press)

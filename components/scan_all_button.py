@@ -42,7 +42,7 @@ def on_scan_all_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTT
 	try:
 		logger.info(f"Received scan all button press")
 		timeout = Config.get_scan_timeout()
-		devices_list = Config.get_instance().devices_list
+		devices_list = Config.get_instance().devices.get_addresses()
 		
 		# Run scan in a separate thread to avoid blocking MQTT callback
 		scan_thread = threading.Thread(

@@ -45,10 +45,12 @@ def publish_discovery_message_for_device_tracker(device: Device):
 	state_topic = get_device_tracker_state_topic(device.address)
 	safe_device_address = device.address.replace(":", "_")
 
+	device_name = device.name if device.name is not None else safe_device_address
+
 	discovery_payload: DeviceTrackerDiscoveryPayload = {
 		"device": device_payload,
 		"state_topic": state_topic,
-		"name": f"Device Tracker {device.name}",
+		"name": f"Device Tracker {device_name}",
 		"unique_id": f"device_tracker_{safe_device_address}",
 		"payload_home": HomeState.home.value,
 		"payload_not_home": HomeState.not_home.value,

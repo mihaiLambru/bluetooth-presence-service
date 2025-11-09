@@ -13,6 +13,8 @@ class DevicesList:
 		if len(matches) == 0:
 			raise ValueError(f"Device with address {address} not found")
 		return matches[0]
+	def get_addresses(self) -> list[str]:
+		return [device.address for device in self.devices]
 	def __getitem__(self, address: str) -> Device:
 		return self._find_device(address)
 	def set_device_name(self, address: str, name: str) -> None:
@@ -31,13 +33,24 @@ class Config:
 		if cls._instance is None:
 			cls._instance = super().__new__(cls)  # pyright: ignore[reportAttributeAccessIssue]
 		return cls._instance
+
+	def _get_devices_list_from_config(self, config_devices_list: list[dict[str, Any] | str]) -> list[Device]:
+		devices_list: list[Device] = []
+		for device in config_devices_list:
+			if isinstance(device, str):
+				devices_list.append(Device(device))
+			elif isinstance(device, dict):  # pyright: ignore[reportUnnecessaryIsInstance]
+				devices_list.append(Device(device["address"], device["name"]))
+			else:
+				raise ValueError(f"Invalid device: {device}")
+		return devices_list
 	
 	def __init__(self, configData: Dict[str, Any]) -> None:
 		# Only initialize once
 		if not hasattr(self, '_initialized'):
 			# use only devices
-			self.devices_list: list[str] = configData["devices_list"] # this should be removed in the future
-			self.devices: DevicesList = DevicesList([Device(address) for address in configData["devices_list"]])
+			devices_list = self._get_devices_list_from_config(configData["devices_list"])
+			self.devices: DevicesList = DevicesList(devices_list)
 			self.automatic_scan: int = configData["automatic_scan"]
 			self.scan_timeout: int = configData.get("scan_timeout", 60)
 			self.discovery_interval: int = configData.get("discovery_interval", 3600)  # Default 1 hour
