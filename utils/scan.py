@@ -14,7 +14,7 @@ logger = logging.getLogger("scan")
 scanning_filters: BlueZDiscoveryFilters = {
 	# "Transport": "le",
 	"DuplicateData": True,
-	"RSSI": -90
+	# "RSSI": -90
 }
 
 async def scan_device(address: str, timeout: int) -> None:
