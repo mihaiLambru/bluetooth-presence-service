@@ -36,6 +36,7 @@ async def app_main():
 			while not shutdown_event.is_set():
 				
 				# Run regular scan
+				# config timeout can be changed. 10 seconds it's a safe temporary value
 				await scan_devices(config.devices.get_addresses(), 10) # 10 seconds timeout
 				
 				try:
