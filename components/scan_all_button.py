@@ -4,6 +4,7 @@ from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
 from mqtt.send_event import send_event
 import paho.mqtt.client as mqtt
+from utils.scan import BluetoothScanner
 
 logger = logging.getLogger("components.scan_all_button")
 
@@ -28,6 +29,7 @@ def publish_discovery_message_for_scan_all_button():
 
 def on_scan_all_button_press(client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage) -> None:
 	try:
+		BluetoothScanner.start_scanning()
 		logger.info("Received scan all button press")
 	except Exception as e:
 		logger.error(f"Error processing scan button press: {e}")

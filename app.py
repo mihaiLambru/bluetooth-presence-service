@@ -1,5 +1,6 @@
 import asyncio
 import logging
+
 from config import Config
 from mqtt.start_mqtt_loop import start_mqtt_loop, stop_mqtt_loop
 from utils.scan import BluetoothScanner
@@ -27,31 +28,11 @@ async def app_main():
 		shutdown_event.set()
 
 	try:
-		# Check if automatic_scan exists and is greater than 0
-		automatic_scan = config.automatic_scan
-		
-		if automatic_scan > 0:
-			logger.info(f"Starting automatic scan every {automatic_scan} seconds")
-			
-			while not shutdown_event.is_set():
-				
-				# Run regular scan
-				bluetooth_scanner = BluetoothScanner()
-
-				await bluetooth_scanner.scan_devices(config.devices.get_addresses(), Config.get_scan_timeout())
-				
-				try:
-					await asyncio.wait_for(shutdown_event.wait(), timeout=automatic_scan)
-					break  # Event was set, exit loop
-				except asyncio.TimeoutError:
-					continue  # Timeout reached, continue scanning
-		else:
-			# Keep the app running even without automatic scanning, but still run discovery
-			logger.info("App is running and listening for MQTT events. Press Ctrl+C to exit.")
-			
-			await shutdown_event.wait()  # Wait indefinitely until shutdown
+		await BluetoothScanner().scan_loop(shutdown_event)
 	except KeyboardInterrupt:
 		logger.info("Shutting down...")
 		signal_handler()
+	except Exception as e:
+		logger.error("Error in app: %s", e)
 	finally:
 		stop_mqtt_loop()

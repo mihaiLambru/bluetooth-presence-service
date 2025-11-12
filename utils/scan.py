@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import pprint
+import time
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -27,14 +28,36 @@ class ScanContext:
 
 
 class BluetoothScanner:
+    is_scanning: bool = False
+    @staticmethod
+    def start_scanning() -> None:
+        BluetoothScanner.is_scanning = True
+    @staticmethod
+    def stop_scanning() -> None:
+        BluetoothScanner.is_scanning = False
+    
     def __init__(self):
         self._scanner_kwargs: dict[str, Any] = {}
-        self._scanner_kwargs["detection_callback"] = self._on_device_found
-        self._scanner_kwargs["scanning_filters"] = scanning_filters
-        self._scanner_kwargs["scanning_mode"] = "active"
-        self._scanner: BleakScanner = BleakScanner(**self._scanner_kwargs)
+        self._scanner: BleakScanner = BleakScanner(detection_callback=self._on_device_found, scanning_filters=scanning_filters, scanning_mode="active")
         self._current_scan: Optional[ScanContext] = None
         self._lock: Optional[asyncio.Lock] = None
+
+    async def scan_loop(self, shutdown_event: asyncio.Event) -> None:
+        try:
+            # Check if automatic_scan exists and is greater than 0
+            config = Config.get_instance()
+            while not shutdown_event.is_set():
+                last_scan_time = time.time()
+                if self.is_scanning:
+                    last_scan_time = time.time()
+                    await self.scan_devices(config.devices.get_addresses(), config.scan_timeout)
+                elif time.time() - last_scan_time > config.automatic_scan:
+                    await self.scan_devices(config.devices.get_addresses(), 10)
+            # wait 2 seonds
+            await asyncio.sleep(2)
+                
+        except Exception as e:
+            logger.error("Error in scan loop: %s", e)
 
     async def scan_device(self, address: str, timeout: int) -> None:
         await self.scan_devices([address], timeout)
@@ -95,6 +118,7 @@ class BluetoothScanner:
         try:
             logger.info("Stopping scanner")
             await self._scanner.stop()
+            BluetoothScanner.stop_scanning()
             logger.info("Scanner stopped")
         except Exception as exc:
             logger.error("Error stopping scanner: %s", exc)
