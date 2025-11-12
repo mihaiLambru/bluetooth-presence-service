@@ -2,7 +2,7 @@ import asyncio
 import logging
 from config import Config
 from mqtt.start_mqtt_loop import start_mqtt_loop, stop_mqtt_loop
-from utils.scan import scan_devices
+from utils.scan import BluetoothScanner
 from utils.read_config import read_config
 
 logger = logging.getLogger("app")
@@ -36,8 +36,9 @@ async def app_main():
 			while not shutdown_event.is_set():
 				
 				# Run regular scan
-				# config timeout can be changed. 10 seconds it's a safe temporary value
-				await scan_devices(config.devices.get_addresses(), 10) # 10 seconds timeout
+				bluetooth_scanner = BluetoothScanner()
+
+				await bluetooth_scanner.scan_devices(config.devices.get_addresses(), Config.get_scan_timeout())
 				
 				try:
 					await asyncio.wait_for(shutdown_event.wait(), timeout=automatic_scan)

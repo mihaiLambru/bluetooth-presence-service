@@ -15,7 +15,7 @@ from mqtt.send_event import DeviceStatusUpdateData
 logger = logging.getLogger("scan")
 
 scanning_filters: BlueZDiscoveryFilters = {
-    # "Transport": "le",
+    "Transport": "le",
     "DuplicateData": False,
     # "RSSI": -90
 }
@@ -139,10 +139,3 @@ class BluetoothScanner:
                 getattr(device, "address", "unknown"),
                 exc,
             )
-
-
-bluetooth_scanner = BluetoothScanner()
-
-
-scan_device = bluetooth_scanner.scan_device
-scan_devices = bluetooth_scanner.scan_devices
