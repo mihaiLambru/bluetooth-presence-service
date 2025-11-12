@@ -43,18 +43,22 @@ class BluetoothScanner:
         self._lock: Optional[asyncio.Lock] = None
 
     async def scan_loop(self, shutdown_event: asyncio.Event) -> None:
+        logger.info("Starting scan loop")
         try:
             # Check if automatic_scan exists and is greater than 0
             config = Config.get_instance()
+            last_scan_time = time.time()
             while not shutdown_event.is_set():
-                last_scan_time = time.time()
                 if self.is_scanning:
+                    logger.info("Manual scan started")
                     last_scan_time = time.time()
                     await self.scan_devices(config.devices.get_addresses(), config.scan_timeout)
                 elif time.time() - last_scan_time > config.automatic_scan:
+                    logger.info("Automatic scan started")
+                    last_scan_time = time.time()
                     await self.scan_devices(config.devices.get_addresses(), 10)
-            # wait 2 seonds
-            await asyncio.sleep(2)
+                # wait 2 seonds
+                await asyncio.sleep(2)
                 
         except Exception as e:
             logger.error("Error in scan loop: %s", e)
