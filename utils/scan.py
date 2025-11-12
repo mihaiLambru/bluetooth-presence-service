@@ -2,7 +2,7 @@ import asyncio
 import logging
 import pprint
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 from bleak import BleakScanner
 from bleak.args.bluez import BlueZDiscoveryFilters
@@ -16,10 +16,9 @@ logger = logging.getLogger("scan")
 
 scanning_filters: BlueZDiscoveryFilters = {
     # "Transport": "le",
-    "DuplicateData": True,
+    "DuplicateData": False,
     # "RSSI": -90
 }
-
 
 @dataclass
 class ScanContext:
@@ -28,16 +27,12 @@ class ScanContext:
 
 
 class BluetoothScanner:
-    _instance: Optional["BluetoothScanner"] = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialize()
-        return cls._instance
-
-    def _initialize(self) -> None:
-        self._scanner: Optional[BleakScanner] = None
+    def __init__(self):
+        self._scanner_kwargs: dict[str, Any] = {}
+        self._scanner_kwargs["detection_callback"] = self._on_device_found
+        self._scanner_kwargs["scanning_filters"] = scanning_filters
+        self._scanner_kwargs["scanning_mode"] = "active"
+        self._scanner: BleakScanner = BleakScanner(**self._scanner_kwargs)
         self._current_scan: Optional[ScanContext] = None
         self._lock: Optional[asyncio.Lock] = None
 
@@ -59,23 +54,22 @@ class BluetoothScanner:
         missing_devices: list[str] = []
 
         async with lock:
+            self._scanner_kwargs["detection_callback"] = self._on_device_found
             context = ScanContext(
                 not_found_devices=set(known_devices),
                 stop_event=asyncio.Event(),
             )
             self._current_scan = context
 
-            scanner = self._ensure_scanner()
             try:
                 logger.info("Starting scanner")
-                await scanner.start()
+                await self._start_scanner()
                 logger.info("Scanner started")
                 try:
                     await asyncio.wait_for(context.stop_event.wait(), timeout=timeout)
                     logger.info("Stopping scanner after devices were found")
                 except asyncio.TimeoutError:
                     logger.info("Scan timed out after %d seconds", timeout)
-                logger.info("Stopping scanner")
             except Exception as exc:
                 logger.error("Error during scanning: %s", exc)
             finally:
@@ -91,29 +85,13 @@ class BluetoothScanner:
             self._lock = asyncio.Lock()
         return self._lock
 
-    def _ensure_scanner(self) -> BleakScanner:
-        if self._scanner is None:
-            logger.info("Initializing BleakScanner instance")
-            self._scanner = BleakScanner(
-                detection_callback=self._on_device_found,
-                scanning_filters=scanning_filters,
-                scanning_mode="active",
-            )
-        return self._scanner
-
     async def _start_scanner(self) -> None:
-        if self._scanner is None:
-            self._scanner = self._ensure_scanner()
         try:
-            logger.info("Starting scanner")
             await self._scanner.start()
-            logger.info("Scanner started")
         except Exception as exc:
             logger.error("Error starting scanner: %s", exc)
 
     async def _stop_scanner(self) -> None:
-        if self._scanner is None:
-            return
         try:
             logger.info("Stopping scanner")
             await self._scanner.stop()
