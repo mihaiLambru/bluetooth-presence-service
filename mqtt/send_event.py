@@ -23,4 +23,5 @@ class DeviceStatusUpdateData(TypedDict):
 	address: str
 	device: BLEDevice | None
 	found: bool
+	rssi: int
 

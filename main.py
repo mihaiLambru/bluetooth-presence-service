@@ -1,6 +1,7 @@
 import asyncio
 from app import app_main
 import logging
+import sys
 
 logging.basicConfig(
     level=logging.INFO,
@@ -8,7 +9,11 @@ logging.basicConfig(
 )
 
 async def main(): 
-	await app_main()
+    try:
+        await app_main()
+    except Exception as e:
+        logging.error("Error in main: %s", e)
+        sys.exit(1)
 
 if __name__ == "__main__":
 	asyncio.run(main())
