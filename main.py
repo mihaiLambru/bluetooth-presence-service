@@ -8,7 +8,11 @@ logging.basicConfig(
 )
 
 async def main(): 
-	await app_main()
+    try:
+        await app_main()
+    except Exception as e:
+        logging.error("Error in main: %s", e)
+        raise e
 
 if __name__ == "__main__":
 	asyncio.run(main())

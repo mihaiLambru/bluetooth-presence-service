@@ -1,4 +1,5 @@
-import enum, json
+import enum
+import json
 import logging
 from typing import TypedDict
 from bleak.backends.device import BLEDevice
@@ -23,4 +24,5 @@ class DeviceStatusUpdateData(TypedDict):
 	address: str
 	device: BLEDevice | None
 	found: bool
+	rssi: int
 

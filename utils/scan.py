@@ -145,7 +145,7 @@ class BluetoothScanner:
                 Config.set_device_name(device.address, device.name)
 
             device_data = DeviceStatusUpdateData(
-                address=device.address, device=device, found=True
+                address=device.address, device=device, found=True, rssi=advertisement_data.rssi
             )
             sendDeviceHomeEvent(device_data)
             not_found_devices.remove(device.address)
