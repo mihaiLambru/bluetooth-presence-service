@@ -1,4 +1,5 @@
-import enum, json
+import enum
+import json
 import logging
 from typing import TypedDict
 from bleak.backends.device import BLEDevice
