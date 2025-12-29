@@ -1,9 +1,23 @@
+from datetime import datetime
 from typing import Dict, Any, Iterator
+
+from mqtt.types import HomeState
 
 class Device:
 	def __init__(self, address: str, name: str | None = None):
 		self.address = address
 		self.name = name
+		self.rssi: int | None = None
+		self.state: HomeState | None = None
+		self.last_seen: datetime | None = None
+
+	def mark_home(self, rssi: int, seen_at: datetime) -> None:
+		self.rssi = rssi
+		self.state = HomeState.home
+		self.last_seen = seen_at
+
+	def mark_not_home(self) -> None:
+		self.state = HomeState.not_home
 
 class DevicesList:
 	def __init__(self, devices: list[Device]):
