@@ -84,15 +84,15 @@ def sendDeviceHomeEvent(device: DeviceStatusUpdateData):
 	previous_rssi = config_device.rssi
 
 	current_rssi = device["rssi"]
-	config_device.mark_home(current_rssi, now)
-
 	state_changed = previous_state != HomeState.home
 	rssi_changed = previous_rssi is None or abs(current_rssi - previous_rssi) > 5
 
 	if not (state_changed or rssi_changed):
+		config_device.mark_home(previous_rssi if previous_rssi is not None else -100, now)
 		logger.debug("No state or significant rssi change for %s; skipping MQTT publish", config_device.address)
 		return
 
+	config_device.mark_home(current_rssi, now)
 	deviceTopic = get_device_tracker_state_topic(device["address"])
 	send_event(deviceTopic, {
 		"state": HomeState.home.value,

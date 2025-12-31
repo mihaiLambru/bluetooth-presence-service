@@ -1,7 +1,25 @@
 from datetime import datetime
-from typing import Dict, Any, Iterator
+from enum import StrEnum
+from typing import Dict, Any, Iterator, Optional
 
 from mqtt.types import HomeState
+
+class ScanPreset(StrEnum):
+	often = "often"
+	balanced = "balanced"
+	rarely = "rarely"
+	never = "never"
+	continuous = "continuous"
+
+SCAN_PRESET_INTERVALS: dict[ScanPreset, int | None] = {
+	ScanPreset.often: 30,
+	ScanPreset.balanced: 600,
+	ScanPreset.rarely: 3600,
+	ScanPreset.never: None,
+	ScanPreset.continuous: 0,
+}
+
+DEFAULT_SCAN_PRESET = ScanPreset.balanced
 
 class Device:
 	def __init__(self, address: str, name: str | None = None):
@@ -65,7 +83,9 @@ class Config:
 			# use only devices
 			devices_list = self._get_devices_list_from_config(configData["devices_list"])
 			self.devices: DevicesList = DevicesList(devices_list)
-			self.automatic_scan: int = configData["automatic_scan"]
+
+			self.automatic_scan_preset: ScanPreset = DEFAULT_SCAN_PRESET
+			self.automatic_scan: int | None = self._get_interval_for_preset(self.automatic_scan_preset)
 			self.scan_timeout: int = configData.get("scan_timeout", 60)
 			self.discovery_interval: int = configData.get("discovery_interval", 3600)  # Default 1 hour
 			self.mqtt_host: str = configData["mqtt_host"]
@@ -73,6 +93,26 @@ class Config:
 			self.mqtt_username: str = configData["mqtt_username"]
 			self.mqtt_password: str = configData["mqtt_password"]
 			self._initialized = True
+
+	def _get_interval_for_preset(self, preset: ScanPreset) -> int | None:
+		return SCAN_PRESET_INTERVALS.get(preset, SCAN_PRESET_INTERVALS[DEFAULT_SCAN_PRESET])
+
+	def _parse_scan_preset(self, preset_value: Optional[str]) -> ScanPreset | None:
+		if preset_value is None:
+			return None
+		try:
+			return ScanPreset(preset_value)
+		except ValueError:
+			return None
+
+	def _infer_scan_preset_from_seconds(self, interval_seconds: Any) -> ScanPreset:
+		if isinstance(interval_seconds, (int, float)):
+			if interval_seconds <= 0:
+				return ScanPreset.never
+			for preset, interval in SCAN_PRESET_INTERVALS.items():
+				if interval is not None and interval == int(interval_seconds):
+					return preset
+		return DEFAULT_SCAN_PRESET
 
 	@staticmethod
 	def set_device_name(device_address: str, device_name: str) -> None:
@@ -111,3 +151,25 @@ class Config:
 	def get_scan_timeout() -> int:
 		instance = Config.get_instance()
 		return instance.scan_timeout
+
+	@staticmethod
+	def set_scan_preset(preset_value: str) -> ScanPreset:
+		instance = Config.get_instance()
+
+		preset = instance._parse_scan_preset(preset_value)
+		if preset is None:
+			raise ValueError(f"Invalid scan preset: {preset_value}")
+
+		instance.automatic_scan_preset = preset
+		instance.automatic_scan = instance._get_interval_for_preset(preset)
+		return preset
+
+	@staticmethod
+	def get_scan_preset() -> ScanPreset:
+		instance = Config.get_instance()
+		return instance.automatic_scan_preset
+
+	@staticmethod
+	def get_automatic_scan_interval() -> int | None:
+		instance = Config.get_instance()
+		return instance.automatic_scan
