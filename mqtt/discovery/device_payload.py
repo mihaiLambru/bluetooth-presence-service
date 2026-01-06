@@ -6,7 +6,8 @@ class DevicePayload(TypedDict):
 	manufacturer: NotRequired[str]
 	model: NotRequired[str]
 	sw_version: NotRequired[str]
-	connections: NotRequired[set[tuple[str, str]]]
+	connections: NotRequired[list[tuple[str, str]]]
+
 
 device_payload: DevicePayload = {
   "identifiers": ["bt-scan-service"],

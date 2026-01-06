@@ -33,7 +33,7 @@ def get_device_tracker_payload(address: str) -> DevicePayload:
   name = f"Device Tracker {device.name if device.name is not None else address}"
 
   return {
-		"connections": {("mac", address)},
+		"connections": [("mac", address)],
     "identifiers": identifiers,
     "name": name,
   }
