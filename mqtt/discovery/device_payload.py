@@ -1,11 +1,12 @@
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 class DevicePayload(TypedDict):
 	identifiers: list[str]
-	name: str
-	manufacturer: str
-	model: str
-	sw_version: str
+	name: NotRequired[str]
+	manufacturer: NotRequired[str]
+	model: NotRequired[str]
+	sw_version: NotRequired[str]
+	connections: NotRequired[set[tuple[str, str]]]
 
 device_payload: DevicePayload = {
   "identifiers": ["bt-scan-service"],

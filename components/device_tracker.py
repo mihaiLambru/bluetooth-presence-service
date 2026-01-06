@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import NotRequired, TypedDict
 from config import Config, Device
 from mqtt.discovery.components import Components
-from mqtt.discovery.device_payload import device_payload
+from mqtt.discovery.device_payload import DevicePayload, device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
 from mqtt.send_event import DeviceStatusUpdateData, send_event
 from mqtt.types import HomeState
@@ -26,6 +26,17 @@ class DeviceTrackerDiscoveryPayload(DiscoveryPayload):
 class DeviceTrackerAttributesPayload(TypedDict):
 	rssi: int
 	last_seen: str
+
+def get_device_tracker_payload(address: str) -> DevicePayload:
+  device = Config.get_instance().devices[address]
+  identifiers = [device_payload["identifiers"][0], address]
+  name = f"Device Tracker {device.name if device.name is not None else address}"
+
+  return {
+		"connections": {("mac", address)},
+    "identifiers": identifiers,
+    "name": name,
+  }
 
 # Device Tracker
 def get_device_tracker_core_topic(device_address: str):
@@ -54,7 +65,7 @@ def publish_discovery_message_for_device_tracker(device: Device):
 	device_name = device.name if device.name is not None else safe_device_address
 
 	discovery_payload: DeviceTrackerDiscoveryPayload = {
-		"device": device_payload,
+		"device": get_device_tracker_payload(device.address),
 		"state_topic": state_topic,
     "value_template": "{{ value_json.state }}",
 		"json_attributes_topic": attributes_topic,
@@ -85,11 +96,11 @@ def sendDeviceHomeEvent(device: DeviceStatusUpdateData):
 
 	current_rssi = device["rssi"]
 	state_changed = previous_state != HomeState.home
-	rssi_changed = previous_rssi is None or abs(current_rssi - previous_rssi) > 5
+	# rssi_changed = previous_rssi is None or abs(current_rssi - previous_rssi) > 5
 
-	if not (state_changed or rssi_changed):
+	if not (state_changed):
 		config_device.mark_home(previous_rssi if previous_rssi is not None else -100, now)
-		logger.debug("No state or significant rssi change for %s; skipping MQTT publish", config_device.address)
+		logger.debug("No state change for %s; skipping MQTT publish", config_device.address)
 		return
 
 	config_device.mark_home(current_rssi, now)
