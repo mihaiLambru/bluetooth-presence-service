@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import pprint
+import string
 import time
 from dataclasses import dataclass
 from typing import Any, Optional
@@ -146,7 +147,7 @@ class BluetoothScanner:
 
         try:
             logger.info("Device details: %s, %s", device, advertisement_data)
-            if device.name is not None:
+            if device.name is not None and not self._is_probably_identifier(device.name):
                 Config.set_device_name(device.address, device.name)
 
             device_data = DeviceStatusUpdateData(
@@ -172,3 +173,19 @@ class BluetoothScanner:
                 getattr(device, "address", "unknown"),
                 exc,
             )
+
+    def _is_probably_identifier(self, name: str) -> bool:
+        """Filter out identifier-like names (e.g., hex strings such as '0102000000')."""
+        trimmed = name.strip()
+        if not trimmed:
+            return True
+
+        # Skip if the name is only digits or hex-looking and long enough to be an ID.
+        if len(trimmed) >= 8 and all(ch in string.hexdigits for ch in trimmed):
+            return True
+
+        # Skip if there are no alphabetic characters (likely a code, not a friendly name).
+        if len(trimmed) >= 6 and not any(ch.isalpha() for ch in trimmed):
+            return True
+
+        return False
