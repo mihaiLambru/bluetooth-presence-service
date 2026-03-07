@@ -60,7 +60,6 @@ The application is configured via the `config.json` file. Here's a detailed brea
     "devices_list": [
         "AC:DF:A1:C3:80:E3"
     ],
-    "automatic_scan": 60,
     "scan_timeout": 600,
     "mqtt_host": "localhost",
     "mqtt_port": 1883,
@@ -77,13 +76,16 @@ The application is configured via the `config.json` file. Here's a detailed brea
 - **Example**: `["AC:DF:A1:C3:80:E3", "12:34:56:78:90:AB"]`
 - **Required**: Yes
 
-#### `automatic_scan` (integer)
-- **Description**: Interval in seconds for automatic scanning of all devices
-- **Default**: 60 seconds
-- **Special values**:
-  - `0`: Disable automatic scanning (manual control only)
-  - `> 0`: Scan all devices every N seconds
-- **Example**: `60` (scan every minute)
+#### `automatic_scan_preset` (string)
+- **Description**: Choose how often automatic scans run
+- **Options**:
+  - `often`: every 30 seconds
+  - `balanced`: every 10 minutes
+  - `rarely`: every 1 hour
+  - `never`: disable automatic scanning
+  - `continuous`: always scanning
+- **Default**: `balanced`
+- **Backward compatibility**: `automatic_scan` (seconds) is still read if present and will be mapped to the closest preset.
 
 #### `scan_timeout` (integer)
 - **Description**: Maximum time in seconds to wait for each device during scanning. This can be overwritten by Home Assistance
@@ -152,17 +154,22 @@ The application automatically integrates with Home Assistant through MQTT discov
 - **Function**: Adjusts the scan timeout duration
 - **Topic**: `homeassistant/number/scan_timeout/command`
 
+#### Scan Preset Select
+- **Entity**: `select.scan_preset`
+- **Function**: Switch between automatic scan presets (`often`, `balanced`, `rarely`, `never`, `continuous`)
+- **Topic**: `homeassistant/select/scan_preset/command`
+
 ## Usage
 
 ### Automatic Mode
-When `automatic_scan` is set to a value greater than 0, the application will:
+When `automatic_scan_preset` is set to `often`, `balanced`, `rarely`, or `continuous`, the application will:
 1. Start automatically
-2. Scan all devices every N seconds
+2. Scan all devices based on the selected preset interval
 3. Update Home Assistant device tracker states
 4. Continue running until stopped
 
 ### Manual Mode
-When `automatic_scan` is set to 0, the application will:
+When `automatic_scan_preset` is set to `never`, the application will:
 1. Start and wait for MQTT commands
 2. Only scan when triggered via Home Assistant buttons
 3. Provide full manual control over scanning

@@ -2,7 +2,7 @@ import enum
 import logging
 from datetime import datetime, timezone
 from typing import NotRequired, TypedDict
-from config import Device
+from config import Config, Device
 from mqtt.discovery.components import Components
 from mqtt.discovery.device_payload import device_payload
 from mqtt.discovery.discovery_payload import DiscoveryPayload
@@ -76,14 +76,40 @@ def publish_discovery_message_for_device_tracker(device: Device):
 	send_event(discovery_topic, discovery_payload)
 
 def sendDeviceHomeEvent(device: DeviceStatusUpdateData):
+	config = Config.get_instance()
+	config_device = config.devices[device["address"]]
+	now = datetime.now(timezone.utc)
+
+	previous_state = config_device.state
+	previous_rssi = config_device.rssi
+
+	current_rssi = device["rssi"]
+	state_changed = previous_state != HomeState.home
+	# rssi_changed = previous_rssi is None or abs(current_rssi - previous_rssi) > 5
+
+	if not (state_changed):
+		config_device.mark_home(previous_rssi if previous_rssi is not None else -100, now)
+		logger.debug("No state change for %s; skipping MQTT publish", config_device.address)
+		return
+
+	config_device.mark_home(current_rssi, now)
 	deviceTopic = get_device_tracker_state_topic(device["address"])
 	send_event(deviceTopic, {
 		"state": HomeState.home.value,
-		"rssi": device["rssi"],
-		"last_seen": datetime.now(timezone.utc).isoformat()
+		"rssi": config_device.rssi,
+		"last_seen": now.isoformat()
 	})
 
 def sendDeviceNotHomeEvent(deviceAddress: str):
+	config = Config.get_instance()
+	config_device = config.devices[deviceAddress]
+	previous_state = config_device.state
+	config_device.mark_not_home()
+
+	if previous_state == HomeState.not_home:
+		logger.debug("State already not_home for %s; skipping MQTT publish", config_device.address)
+		return
+
 	deviceTopic = get_device_tracker_state_topic(deviceAddress)
 	send_event(deviceTopic, {
 		"state": HomeState.not_home.value,

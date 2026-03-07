@@ -3,11 +3,13 @@
 from components.device_tracker import publish_discovery_message_for_device_tracker
 from components.scan_all_button import publish_discovery_message_for_scan_all_button
 from components.scan_device_button import publish_discovery_message_for_scan_button
+from components.scan_preset_select import publish_discovery_message_for_scan_preset
 from components.scan_timeout_number import publish_discovery_message_for_timeout
 import threading
 from config import DevicesList
 
 def run_discovery(devices: DevicesList):
+	publish_discovery_message_for_scan_preset()
 	publish_discovery_message_for_timeout()
 	publish_discovery_message_for_scan_all_button()
 
